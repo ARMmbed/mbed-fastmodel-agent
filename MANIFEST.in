@@ -1,0 +1,2 @@
+include fastmodel_agent/*.conf
+include fastmodel_agent/config.json

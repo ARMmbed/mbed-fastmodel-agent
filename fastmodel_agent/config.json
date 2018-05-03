@@ -1,0 +1,94 @@
+{
+    "GLOBAL": {
+        "Windows":{
+            "model_lib_path": "C:\\work\\model_libs",
+            "configs": {
+                "DEFAULT": "DEFAULT.conf",
+                "NETWORK": "NETWORK.conf",
+                "FAST":    "FAST.conf"
+            }
+        },
+        "Linux":{
+            "model_lib_path": "/user/model_libs",
+            "configs": {
+                "DEFAULT": "DEFAULT.conf",
+                "NETWORK": "NETWORK.conf",
+                "FAST":    "FAST.conf"
+            }
+        }
+    },
+    "FVP_MPS2_M0": {
+        "Windows":{
+            "model_lib": "FVP_MPS2_Cortex-M0.dll"
+        },
+        "Linux":{
+            "model_lib": "FVP_MPS2_Cortex-M0.so"
+        }
+    },
+    "FVP_MPS2_M0P": {
+        "Windows":{
+            "model_lib": "FVP_MPS2_Cortex-M0plus.dll"
+        },
+        "Linux":{
+            "model_lib": "FVP_MPS2_Cortex-M3plus.so"
+        }
+    },
+    "FVP_MPS2_M3": {
+        "Windows":{
+            "model_lib": "FVP_MPS2_Cortex-M3.dll"
+        },
+        "Linux":{
+            "model_lib": "FVP_MPS2_Cortex-M3.so"
+        }
+    },
+    "FVP_MPS2_M4": {
+        "Windows":{
+            "model_lib": "FVP_MPS2_Cortex-M4.dll"
+        },
+        "Linux":{
+            "model_lib": "FVP_MPS2_Cortex-M4.so"
+        }
+    },
+    "FVP_MPS2_M7": {
+        "Windows":{
+            "model_lib": "FVP_MPS2_Cortex-M7.dll",
+            "configs_add": {
+                "M7_SPEC": "M7.conf"
+            }
+        },
+        "Linux":{
+            "model_lib": "FVP_MPS2_Cortex-M7.so",
+            "configs_add": {
+                "M7_SPEC": "M7.conf"
+            }
+        }
+    },
+    "FVP_MPS2_M23": {
+        "Windows":{
+            "model_lib": "FVP_MPS2_Cortex-M23.dll",
+            "configs": {
+                "V8_CONFIG": "V8_CONFIG.conf"
+            }
+        },
+        "Linux":{
+            "model_lib": "FVP_MPS2_Cortex-M23.so",
+            "configs": {
+                "V8_CONFIG": "V8_CONFIG.conf"
+            }
+        }
+    },
+    "FVP_MPS2_M33": {
+        "Windows":{
+            "model_lib": "FVP_MPS2_Cortex-M33.dll",
+            "configs_add": {
+                "NETWORK": "V8_CONFIG.conf"
+            }
+        },
+        "Linux":{
+            "model_lib": "FVP_MPS2_Cortex-M33.so",
+            "configs_add": {
+                "NETWORK": "V8_CONFIG.conf"
+            }
+        }
+    }
+}
