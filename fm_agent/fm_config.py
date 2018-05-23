@@ -30,20 +30,20 @@ class configError(Exception):
 
 class FastmodelConfig():
     
-    # default configration file
-    CONFIG_FILE = "config.json"
+    # default settings file
+    SETTINGS_FILE = "settings.json"
             
     def __init__(self):
         """ initialization of FastmodelConfig """
         
-        main_json_file = os.path.join(os.path.dirname(__file__) , self.CONFIG_FILE)
+        settings_json_file = os.path.join(os.path.dirname(__file__), self.SETTINGS_FILE)
 
-        with open(main_json_file,"r") as config_json:    
+        with open(settings_json_file,"r") as config_json:    
             self.json_configs = json.load(config_json)
         self.os = check_host_os();
         
     def get_all_configs (self):
-        """ search every config for all the models in CONFIG_FILE
+        """ search every config for all the models in SETTINGS_FILE
             @return a dictionary for configs and models combination
         """
 
@@ -106,7 +106,7 @@ class FastmodelConfig():
         """
 
         if in_module:
-            filepath = os.path.join( os.path.dirname(__file__) , config_file )
+            filepath = os.path.join( os.path.dirname(__file__) ,"configs" , config_file )
         else:
             filepath = os.path.join( os.getcwd() , config_file )
             

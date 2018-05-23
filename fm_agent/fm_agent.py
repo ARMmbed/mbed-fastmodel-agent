@@ -22,7 +22,7 @@ import time
 import socket
 import logging
 from .utils import *
-from .fastmodel_config import FastmodelConfig
+from .fm_config import FastmodelConfig
 
 # ---------------------------------------------------------------------------
 
@@ -76,21 +76,23 @@ class FastmodelAgent():
     def __run_mode(self):
         if not self.fastmodel_name:
             self.logger.prn_err("Please provided the name to a fastmodel!!")
-            self.__guide_mbedls()
+            self.__guide()
             raise SimulatorError("fastmodel_name not provided!")
         self.model_lib = self.configuration.get_model_lib(self.fastmodel_name)
 
         if not self.model_lib:
             self.logger.prn_err("NO model_lib available for '%s'"% self.fastmodel_name)
-            self.__guide_mbedls()
+            self.__guide()
             raise SimulatorError("fastmodel '%s' not available" % (self.fastmodel_name))
             
         config_dict = self.configuration.get_configs(self.fastmodel_name)
         
         if config_dict and self.config_name in config_dict:
             self.model_params = self.configuration.parse_params_file(config_dict[self.config_name])
+        elif os.path.exists(os.path.join( os.getcwd(), self.config_name )):
+            self.model_params = self.configuration.parse_params_file(self.config_name,in_module=False)
         else:
-            self.__guide_mbedls()
+            self.__guide()
             raise SimulatorError("No config %s avaliable for fastmodel %s" % (self.config_name,self.fastmodel_name))
             
     def __connect_terminal(self):
@@ -105,9 +107,9 @@ class FastmodelAgent():
             self.logger.prn_err("Socket connection error, socket.connect(%s, %s)" % (self.host, self.port))
             self.logger.prn_err("Error: %s" % str(e))
 
-    def __guide_mbedls(self):
+    def __guide(self):
         """ print out information mebdls, help user to spot where possible went wrong"""
-        self.logger.prn_inf("Use 'mbedls -M fastmodel_agent' to list all the available ones")
+        self.logger.prn_inf("Use 'mbedfm' to list all the available Fast Models")
     
     def is_simulator_alive(self):
         """return if the terminal socket is connected"""
@@ -227,16 +229,11 @@ class FastmodelAgent():
         """ return model lib full path of give model_name """
         return self.configuration.get_model_lib(model_name)
         
-    def check_presents(self,filename,in_module=True):
-        """ return the presents of give filename
-            @param in_module default is True, will looking for file inside module folder
-            @param if in_module set to False, will looking for file in pwd
+    def check_config_exist(self,filename):
+        """ return the presents of give config name
         """
 
-        if in_module:
-            filepath = os.path.join( os.path.dirname(__file__) , filename )
-        else:
-            filepath = os.path.join( os.getcwd() , config_file )
+        filepath = os.path.join( os.path.dirname(__file__), "configs" , filename )
 
         return os.path.exists(filepath)
 

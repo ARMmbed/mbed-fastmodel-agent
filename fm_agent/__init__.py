@@ -16,8 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from .fastmodel_agent import FastmodelAgent
-from .fastmodel_agent import SimulatorError
+from .fm_agent import FastmodelAgent
+from .fm_agent import SimulatorError
 
 def create(*args, **kwargs):
     ''' Simple class used to create FastmodelAgent objects
