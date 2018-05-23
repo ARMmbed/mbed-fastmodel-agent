@@ -1,2 +1,2 @@
-include fastmodel_agent/*.conf
-include fastmodel_agent/config.json
+include fm_agent/configs/*.conf
+include fm_agent/settings.json
