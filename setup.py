@@ -29,7 +29,7 @@ from setuptools import find_packages
 
 
 LICENSE = open('LICENSE', encoding="utf-8").read()
-DESCRIPTION = "Fastmodel Agent for mbed tools: mbedls, greentea and htrun"
+DESCRIPTION = "Fast Model Agent for mbed tools: greentea and htrun"
 OWNER_NAMES = 'Qingaho Shi'
 OWNER_EMAILS = 'Qinghao.Shi@arm.com'
 
@@ -41,6 +41,7 @@ setup(name='mbed-fastmodel-agent',
       version='1.0',
       description=DESCRIPTION,
       long_description=read('README.md'),
+      entry_points = {'console_scripts': ['mbedfm=fm_agent.mbedfm:main']},
       author=OWNER_NAMES,
       author_email=OWNER_EMAILS,
       maintainer=OWNER_NAMES,
