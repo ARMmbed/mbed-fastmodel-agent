@@ -1,2 +1,3 @@
+include README.md LICENSE CONTRIBUTING.md
 include fm_agent/configs/*.conf
 include fm_agent/settings.json
