@@ -50,5 +50,6 @@ setup(name='mbed-fastmodel-agent',
       packages=find_packages(),
       license=LICENSE,
       test_suite = 'test',
-      include_package_data=True)
+      include_package_data=True,
+      install_requires=["PrettyTable>=0.7.2"])
 

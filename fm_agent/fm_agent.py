@@ -24,14 +24,6 @@ import logging
 from .utils import *
 from .fm_config import FastmodelConfig
 
-# ---------------------------------------------------------------------------
-
-class SimulatorError(Exception):
-    """
-    Simulator specific Error
-    """
-    pass
-
 class FastmodelAgent():
     def __init__(self, model_name=None, model_config=None, logger=None):
         """ initialize FastmodelAgent
@@ -43,9 +35,8 @@ class FastmodelAgent():
         
         self.fastmodel_name = model_name
         self.config_name    = model_config
-        
 
-        ### TBD sort out logging
+        #If logging not provided, use default log
         if logger:
             self.logger = logger
         else:
@@ -55,24 +46,17 @@ class FastmodelAgent():
             self.logger.setLevel(logging.ERROR)
             self.logger.propagate = False
             self.logger.info('No logger supplied, using default logging logger')
-        
-        ### TBD sort out PVLIB_HOME        
-        try:
-            sys.path.append(os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python27'))
-            import fm.debug
-        except KeyError as e:
-            print "Error!!! import fast models library!!!"
 
         self.read_timeout = 0.2
         self.model = None # running instant of the model
         self.socket = None # running instant of socket
         self.configuration = FastmodelConfig()
-        
+
         if model_config:
             self.__run_mode()
         else:
             pass
-        
+
     def __run_mode(self):
         if not self.fastmodel_name:
             self.logger.prn_err("Please provided the name to a fastmodel!!")
@@ -117,19 +101,16 @@ class FastmodelAgent():
         
     def start_simulator(self):
         """ launch given fastmodel with configs """
-        
-        # TBD analysis models required and configs
-        #if mode requested exist
-        import fm.debug
-        
-        # TBD do we want to output model params ?
-        # TBD handle lib_laoding exceptions?
-        self.model = fm.debug.LibraryModel(self.model_lib, self.model_params)
-        self.port = 5000
-        self.host = "localhost"
-                
-        return True
-        
+        if check_import():
+            import fm.debug
+            # module launch parameters
+            self.model = fm.debug.LibraryModel(self.model_lib, self.model_params)
+            self.port = 5000
+            self.host = "localhost"
+            return True
+        else:
+            raise SimulatorError("fastmodel product was NOT installed correctly")
+
     def load_simulator(self,image):
         """ Load a launched fastmodel with given image(full path)"""
         if self.is_simulator_alive():
@@ -203,7 +184,7 @@ class FastmodelAgent():
 
     def __closeConnection(self):
         """ close the terminal socket connection"""
-        if self.__socketConnected(): #TBD if socket, rather than simulator alive
+        if self.__socketConnected():
             self.socket.close()
             self.logger.prn_inf("Closing terminall socket connection")
             self.socket = None

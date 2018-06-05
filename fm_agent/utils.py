@@ -30,12 +30,32 @@ _TEMP_STDOUT = tempfile.NamedTemporaryFile(mode='w+b')
 tee = subprocess.Popen(["tee", _TEMP_STDOUT ], stdin=subprocess.PIPE)
 SAVE = sys.stdout.fileno()
 
+# ---------------------------------------------------------------------------
+
+class SimulatorError(Exception):
+    """
+    Simulator specific Error
+    """
+    pass
+
+def check_import():
+    """ Append PVLIB_HOME to PATH, so import PyCADI fm.debug can be imported """
+    try:
+        sys.path.append(os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python27'))
+        import fm.debug
+    except KeyError as e:
+        print "Error: PVLIB_HOME not exist, check your fastmodel installation!!!"
+        return False
+    except ImportError as e:
+        print "Error: Failed to import fast models PyCADI!!!"
+        return False
+    else:
+        return True
+    
 def redirect_file():
     time.sleep(1)
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
     os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
-
-
     
 def get_log():
     data=[]
@@ -95,5 +115,4 @@ def boolean_filter(value):
         return False
     else:
         return value
-        
 

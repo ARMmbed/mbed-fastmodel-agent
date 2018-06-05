@@ -20,6 +20,7 @@ import sys
 import os
 from fm_agent import FastmodelAgent
 from fm_agent import SimulatorError
+from fm_agent import check_import
 from prettytable import PrettyTable
 import argparse
 
@@ -29,11 +30,18 @@ def get_version():
     import pkg_resources  # part of setuptools
     return pkg_resources.require("mbed-fastmodel-agent")[0].version
 
-def print_version(args):
+def print_version():
     print(get_version())
 
-def print_models(args):
+def print_models():
+    self_test()
     print list_fastmodels()
+
+def self_test():
+    if check_import():
+        print "Self Test ... Passed" 
+    else:
+        print "Self Test ... Failed"
 
 def list_fastmodels():
     """! List all models and configs in fm_agent"""
@@ -87,12 +95,15 @@ def cli_parser(in_args):
     parser.add_argument('-v', '--version', dest='command',
                         action='store_const', const=print_version,
                         help='print package version and exit')
+    parser.add_argument('-t', '--self-test', dest='command',
+                        action='store_const', const=self_test,
+                        help='self-test if fast model product been installed successfully')
     out_args = parser.parse_args(in_args)
     return out_args
     
 def main():
     args = cli_parser(sys.argv[1:])
-    ret_code = args.command(args)
+    ret_code = args.command()
     if not ret_code:
         ret_code = 0
     sys.exit(ret_code)

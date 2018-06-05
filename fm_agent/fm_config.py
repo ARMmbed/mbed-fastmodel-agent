@@ -21,12 +21,7 @@ import os.path
 from .utils import check_host_os
 from .utils import remove_comments
 from .utils import boolean_filter
-
-class configError(Exception):
-    """
-    Resource specific fastmodel AgentError
-    """
-    pass
+from .utils import SimulatorError
 
 class FastmodelConfig():
     
@@ -100,8 +95,8 @@ class FastmodelConfig():
             @param config_file need to be file name only
             @param in_module default is True, means the config_file inside module folder
             @param if in_module set to False, will looking for config_file in pwd
-            @return if config_file read failed, function will throw configError
-            @return if config_file format is wrong, function will throw configError
+            @return if config_file read failed, function will throw SimulatorError
+            @return if config_file format is wrong, function will throw SimulatorError
             @return if config_file been parsed successfully, will return a dictionary of parameters 
         """
 
@@ -111,7 +106,7 @@ class FastmodelConfig():
             filepath = os.path.join( os.getcwd() , config_file )
             
         if not os.path.exists(filepath):
-            raise configError("model config file not exit: %s" % filepath)
+            raise SimulatorError("model config file not exit: %s" % filepath)
             return None
         
         params_dict={}
@@ -121,16 +116,16 @@ class FastmodelConfig():
             line = remove_comments(line)
             if line:
                 if line.count("=")==0:
-                    raise configError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
+                    raise SimulatorError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
                     return None
                 elif line.count("=")>1:
-                    raise configError("Wrong format in config %s,\nline %s having more than one '='" % (filepath,line))
+                    raise SimulatorError("Wrong format in config %s,\nline %s having more than one '='" % (filepath,line))
                     return None
                 elif line.startswith("="):
-                    raise configError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
+                    raise SimulatorError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
                     return None
                 elif line.endswith("="):
-                    raise configError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
+                    raise SimulatorError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
                     return None
                 else:
                     param_key,param_value = line.split("=")
