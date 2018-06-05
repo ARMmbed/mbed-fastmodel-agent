@@ -4,7 +4,7 @@ mbed-fastmodel-agent is a python module for mbed os testing framework using Fast
 
 This module enables [greentea](https://github.com/ARMmbed/greentea) and [htrun](https://github.com/ARMmbed/htrun) running mbed os tests on Fast Models 
 
-This module also need FastModel and it's PyCADI to be installed on the host.
+To use this module, It is required FastModel and it's PyCADI interface to be installed on the host.
 
 ## download
 ```
@@ -27,6 +27,11 @@ python setup.py install
 
 ## usage
 
+### Self test if fastmodel product installed correctly, "PVLIB_HOME" and PyCADI are avaliable
+```
+    mbedfm --self-test
+``` 
+
 ### list available models you can use with mbed testing framwork
 ```
     mbedfm
@@ -34,9 +39,9 @@ python setup.py install
 
 ### run mbed test with greentea
 ```
-    mbedgt --srm <model_name>:fm_agent:<config_name>
+    mbedgt --fm <model_name>:<config_name>
 ```    
-*e.g. mbedgt --srm FVP_MPS2_M3:fm_agent:DEFAULT*
+*e.g. mbedgt --fm FVP_MPS2_M3:DEFAULT*
 
 *model_name  : The name to fastmodel target supported in mbed os*
 
@@ -46,13 +51,13 @@ python setup.py install
 
 ### run mbed test with htrun
 ```
-    mbedhtrun --srm fm_agent:<config_name> -m <model_name> -f <test_image>
+    mbedhtrun --fm <config_name> -m <model_name> -f <test_image>
 ``` 
-*e.g. mbedhtrun --srm fm_agent:DEFAULT -m FVP_MPS2_M3*
+*e.g. mbedhtrun --fm DEFAULT -m FVP_MPS2_M3*
    
 *model_name  : The name to fastmodel target supported in mbed os*
 
 *config_name : This could be ether pre-defined CONFIG_NAME listed inside mbedfm or a local file*
 
 ## Known issues:
-1. currently not supporting running multiple fast_models at same time due to model serial port is hard coded at 5000
+1. Fast Models normally have 3 or 4 serial terminal ports. But currently only one port is supported at moment. Port number is picked randomly.

@@ -103,10 +103,14 @@ class FastmodelAgent():
         """ launch given fastmodel with configs """
         if check_import():
             import fm.debug
+            # try to detect free port for launch terminal, This should be changed to redirect stdout later on
+            self.port = find_free_port()
+            self.host = "localhost"
+            self.model_params.update({"fvp_mps2.telnetterminal0.start_port":self.port,
+                                      "fvp_mps2.telnetterminal1.start_port":self.port,
+                                      "fvp_mps2.telnetterminal2.start_port":self.port})
             # module launch parameters
             self.model = fm.debug.LibraryModel(self.model_lib, self.model_params)
-            self.port = 5000
-            self.host = "localhost"
             return True
         else:
             raise SimulatorError("fastmodel product was NOT installed correctly")
@@ -186,7 +190,7 @@ class FastmodelAgent():
         """ close the terminal socket connection"""
         if self.__socketConnected():
             self.socket.close()
-            self.logger.prn_inf("Closing terminall socket connection")
+            self.logger.prn_inf("Closing terminal socket connection")
             self.socket = None
         else:
             self.logger.prn_inf("Terminal socket connection already closed")

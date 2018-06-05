@@ -23,7 +23,8 @@ import sys
 import time
 import tempfile
 import subprocess
-
+import socket
+from contextlib import closing
 
 _TEMP_STDOUT = tempfile.NamedTemporaryFile(mode='w+b')
 
@@ -116,3 +117,10 @@ def boolean_filter(value):
     else:
         return value
 
+def find_free_port():
+    """try to determine a free random port"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('localhost', 0))
+    addr, port = s.getsockname()
+    s.close()
+    return port
