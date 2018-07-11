@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/jamesbeyond/mbed-fastmodel-agent/badge.svg?branch=master)](https://coveralls.io/github/jamesbeyond/mbed-fastmodel-agent?branch=master)
+
 # mbed-fastmodel-agent
 
 mbed-fastmodel-agent is a python module for mbed os testing framework using FastModels FVP(Fixed Virtual Platforms).
