@@ -26,13 +26,6 @@ import subprocess
 import socket
 from contextlib import closing
 
-_TEMP_STDOUT = tempfile.NamedTemporaryFile(mode='w+b')
-
-tee = subprocess.Popen(["tee", _TEMP_STDOUT ], stdin=subprocess.PIPE)
-SAVE = sys.stdout.fileno()
-
-# ---------------------------------------------------------------------------
-
 class SimulatorError(Exception):
     """
     Simulator specific Error
