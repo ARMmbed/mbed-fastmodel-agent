@@ -20,7 +20,6 @@ import sys
 import os
 import time
 import socket
-import logging
 from .utils import *
 from .fm_config import FastmodelConfig
 
@@ -40,12 +39,7 @@ class FastmodelAgent():
         if logger:
             self.logger = logger
         else:
-            self.logger = logging.getLogger('fastmodel-agent')
-            if not self.logger.handlers:
-                self.logger.addHandler(logging.NullHandler())
-            self.logger.setLevel(logging.ERROR)
-            self.logger.propagate = False
-            self.logger.info('No logger supplied, using default logging logger')
+            self.logger = FMLogger('fm_agent')
 
         self.read_timeout = 0.2
         self.model = None # running instant of the model
@@ -53,11 +47,19 @@ class FastmodelAgent():
         self.configuration = FastmodelConfig()
 
         if model_config:
-            self.__run_mode()
+            self.setup_simulator(model_name,model_config)
         else:
             pass
 
-    def __run_mode(self):
+    def setup_simulator(self, model_name, model_config):
+        """ setup the simulator, this is crucial before you can start a simulator.
+            @param model_name is the specific model name need to be launched
+            @param model_config is the specific model configure file need to be launched
+            This function check if both model_name or model_config are valid
+        """
+        self.fastmodel_name = model_name
+        self.config_name    = model_config
+
         if not self.fastmodel_name:
             self.logger.prn_err("Please provided the name to a fastmodel!!")
             self.__guide()
@@ -78,7 +80,7 @@ class FastmodelAgent():
         else:
             self.__guide()
             raise SimulatorError("No config %s avaliable for fastmodel %s" % (self.config_name,self.fastmodel_name))
-            
+
     def __connect_terminal(self):
         """ connect socket terminal to a launched fastmodel"""
 
