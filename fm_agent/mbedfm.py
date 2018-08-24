@@ -34,8 +34,8 @@ def print_version():
     print(get_version())
 
 def print_models():
-    self_test()
     print list_fastmodels()
+    self_test()
 
 def self_test():
     if check_import():
@@ -107,3 +107,4 @@ def main():
     if not ret_code:
         ret_code = 0
     sys.exit(ret_code)
+
