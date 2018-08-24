@@ -30,7 +30,7 @@
             "model_lib": "FVP_MPS2_Cortex-M0plus.dll"
         },
         "Linux":{
-            "model_lib": "FVP_MPS2_Cortex-M3plus.so"
+            "model_lib": "FVP_MPS2_Cortex-M0plus.so"
         }
     },
     "FVP_MPS2_M3": {
