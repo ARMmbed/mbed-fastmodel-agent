@@ -34,12 +34,21 @@ class SimulatorError(Exception):
 
 def check_import():
     """ Append PVLIB_HOME to PATH, so import PyCADI fm.debug can be imported """
+    if 'PVLIB_HOME' in os.environ:
+        #FastModels PyCADI have different folder on different host OS
+        fm_pycadi_path1 = os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python27')
+        fm_pycadi_path2 = os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python2.7')
+        if os.path.exists(fm_pycadi_path1):
+            sys.path.append(fm_pycadi_path1)
+        elif os.path.exists(fm_pycadi_path2):
+            sys.path.append(fm_pycadi_path2)
+        else:
+            print "Warning: Could not locate PyCADI in PVLIB_HOME/lib/python27"
+    else:
+        print "Warning: PVLIB_HOME not exist, check your fastmodel installation!"
+
     try:
-        sys.path.append(os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python27'))
         import fm.debug
-    except KeyError as e:
-        print "Error: PVLIB_HOME not exist, check your fastmodel installation!!!"
-        return False
     except ImportError as e:
         print "Error: Failed to import fast models PyCADI!!!"
         return False
@@ -117,3 +126,4 @@ def find_free_port():
     addr, port = s.getsockname()
     s.close()
     return port
+
