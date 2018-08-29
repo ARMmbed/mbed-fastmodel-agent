@@ -110,6 +110,7 @@ class FastmodelAgent():
             terminal = self.model.get_target('fvp_mps2.telnetterminal0')
             self.port = terminal.read_register('Port')
             self.host = "localhost"
+            self.image = None
             return True
         else:
             raise SimulatorError("fastmodel product was NOT installed correctly")
@@ -118,15 +119,39 @@ class FastmodelAgent():
         """ Load a launched fastmodel with given image(full path)"""
         if self.is_simulator_alive():
             cpu = self.model.get_cpus()[0]
-            cpu.load_application(os.path.normpath(image))
+            app = os.path.normpath(image)
+            if os.path.exists(app):
+                cpu.load_application(app)
+                self.image = os.path.normpath(app)
+            else:
+                self.logger.prn_err("Image %s not exist while loading to Fast Models" % app)
+                return False
             return True
         else:
             return False
-        
+
     def run_simulator(self):
         """ Start running a launched fastmodel and connect terminal """
         if self.is_simulator_alive():
-            self.model.run(blocking=False,timeout=1)
+            cpu = self.model.get_cpus()[0]
+            if cpu.is_running:
+                self.logger.prn_err("Fast Model already in running state")
+            else:
+                self.model.run(blocking=False)
+            self.__connect_terminal()
+            return True
+        else:
+            return False
+
+    def reset_simulator(self):
+        """ reset a launched fastmodel and connect terminal """
+        if self.is_simulator_alive():
+            self.model.stop()
+            cpu = self.model.get_cpus()[0]
+            cpu.reset()
+            if self.image:
+                cpu.load_application(self.image)
+            self.model.run(blocking=False)
             self.__connect_terminal()
             return True
         else:
