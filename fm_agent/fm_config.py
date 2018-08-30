@@ -41,20 +41,28 @@ class FastmodelConfig():
         """ search every config for all the models in SETTINGS_FILE
             @return a dictionary for configs and models combination
         """
-
         all_config_dict={}
         for model in self.json_configs.keys():
             if model != "GLOBAL":
                 all_config_dict[model]=self.get_configs(model)
 
         return all_config_dict
-        
-    def get_model_lib(self,model_name):
-        """ get the model lib path and name from the config file
-            @retrun full name and path to the model_lib
+
+    def get_PyCADI_path(self):
+        """ get the PyCADI path from the config file
+            @return PyCADI path if setting exist 
             @return None if not exist
         """
+        if "PyCADI_path" in self.json_configs["GLOBAL"][self.os]:
+            return self.json_configs["GLOBAL"][self.os]["PyCADI_path"]
+        else:
+            return None
 
+    def get_model_lib(self,model_name):
+        """ get the model lib path and name from the config file
+            @return full name and path to the model_lib
+            @return None if not exist
+        """
         if model_name not in self.json_configs:
             return None
 
@@ -75,7 +83,6 @@ class FastmodelConfig():
             @return a dictionary of config_name:config_file for give model_name
             @return None if no config found
         """
-
         if model_name not in self.json_configs:
             return None
 
@@ -99,7 +106,6 @@ class FastmodelConfig():
             @return if config_file format is wrong, function will throw SimulatorError
             @return if config_file been parsed successfully, will return a dictionary of parameters 
         """
-
         if in_module:
             filepath = os.path.join( os.path.dirname(__file__) ,"configs" , config_file )
         else:

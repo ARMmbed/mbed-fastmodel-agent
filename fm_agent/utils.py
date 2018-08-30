@@ -52,8 +52,31 @@ class FMLogger(object):
         self.prn_txd = partial(__prn_log, self, 'TXD')
         self.prn_rxd = partial(__prn_log, self, 'RXD')    
 
+def get_PyCADI_path(self):
+    """ get the PyCADI path from the config file
+        @return PyCADI path if setting exist 
+        @return None if not exist
+    """
+    if "PyCADI_path" in self.json_configs["GLOBAL"]:
+        return self.json_configs["GLOBAL"][self.os]["PyCADI_path"]
+    else:
+        return None
+        
 def check_import():
     """ Append PVLIB_HOME to PATH, so import PyCADI fm.debug can be imported """
+    warning_msgs = []
+    from .fm_config import FastmodelConfig
+    config = FastmodelConfig()
+
+    fm_pycadi_path = config.get_PyCADI_path()
+    if fm_pycadi_path:
+        if os.path.exists(fm_pycadi_path):
+            sys.path.append(fm_pycadi_path)
+        else:
+            warning_msgs.append("Warning: Could not locate PyCADI_path '%s'" % fm_pycadi_path)
+    else:
+        warning_msgs.append("Warning: PyCADI_path not set in settings.json")
+    
     if 'PVLIB_HOME' in os.environ:
         #FastModels PyCADI have different folder on different host OS
         fm_pycadi_path1 = os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python27')
@@ -63,13 +86,15 @@ def check_import():
         elif os.path.exists(fm_pycadi_path2):
             sys.path.append(fm_pycadi_path2)
         else:
-            print "Warning: Could not locate PyCADI in PVLIB_HOME/lib/python27"
+            warning_msgs.append("Warning: Could not locate PyCADI in PVLIB_HOME/lib/python27")
     else:
-        print "Warning: PVLIB_HOME not exist, check your fastmodel installation!"
+        warning_msgs.append("Warning: 'PVLIB_HOME' environment variable not been set.")
 
     try:
         import fm.debug
     except ImportError as e:
+        for warning in warning_msgs:
+            print warning
         print "Error: Failed to import fast models PyCADI!!!"
         return False
     else:

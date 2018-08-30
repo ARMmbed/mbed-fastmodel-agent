@@ -1,6 +1,7 @@
 {
     "GLOBAL": {
         "Windows":{
+            "PyCADI_path": "C:\\Program Files\\ARM\\FastModelsPortfolio_11.4\\lib\\python27",
             "model_lib_path": "C:\\work\\model_libs",
             "configs": {
                 "DEFAULT": "DEFAULT.conf",
@@ -9,6 +10,7 @@
             }
         },
         "Linux":{
+            "PyCADI_path": "/home/user/ARM/FastModelsPortfolio_11.4/lib/python2.7/",
             "model_lib_path": "/home/user/model_libs",
             "configs": {
                 "DEFAULT": "DEFAULT.conf",
