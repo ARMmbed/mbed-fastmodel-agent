@@ -87,7 +87,8 @@ This will try to launch every model in the above list to verify them, so will ta
 >e.g. `mbedhtrun --fm DEFAULT -m FVP_MPS2_M3 -f test.elf`
 
 *<model_name> : The name to fastmodel target supported in mbed os*
-*<config_name> : This could be ether pre-defined CONFIG_NAME listed inside mbedfm or a local file*
+
+*<config_name> : This could be ether pre-defined `CONFIG_NAME` listed inside mbedfm or a local file*
 
 # Configurations to Fast Models
 
