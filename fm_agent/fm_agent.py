@@ -83,7 +83,8 @@ class FastmodelAgent():
 
     def __connect_terminal(self):
         """ connect socket terminal to a launched fastmodel"""
-
+        self.logger.prn_inf("Establishing socket connection to FastModel Terminal")
+        time.sleep(2)
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((self.host, self.port))
@@ -146,13 +147,22 @@ class FastmodelAgent():
     def reset_simulator(self):
         """ reset a launched fastmodel and connect terminal """
         if self.is_simulator_alive():
-            self.model.stop()
+            self.logger.prn_wrn("STOP and RESTART FastModel")
+            self.__closeConnection()
+            self.model.release(shutdown=True)
+            time.sleep(1)
+            import fm.debug
+            self.model = fm.debug.LibraryModel(self.model_lib, self.model_params)
+            # check which host socket port is used for terminal0
+            terminal = self.model.get_target('fvp_mps2.telnetterminal0')
+            self.port = terminal.read_register('Port')
             cpu = self.model.get_cpus()[0]
-            cpu.reset()
             if self.image:
                 cpu.load_application(self.image)
+                self.logger.prn_wrn("RELOAD new image to FastModel")
             self.model.run(blocking=False)
             self.__connect_terminal()
+            self.logger.prn_wrn("Reconnect Terminal")
             return True
         else:
             return False
@@ -219,9 +229,90 @@ class FastmodelAgent():
         else:
             self.logger.prn_inf("Terminal socket connection already closed")
 
+    def __run_to_breakpoint(self):
+        try:
+            self.model.run(timeout=15)
+        except:
+            # On timeout, model hangs
+            self.logger.prn_err("ERROR: Timeout reached without stop at breakpoint")
+            self.model.stop()
+            return False
+        else:
+            return True
+
+    def __CodeCoverage(self):
+        """ runs code coverage dump gcda file """
+        
+        self.model.stop()
+        cpu = self.model.get_cpus()[0]
+
+        symbol_table = []
+        self.logger.prn_inf("Reading symbols from %s" % self.image)
+        if self.image:
+            symbol_table = read_symbol(self.image)
+
+        data_hex_addr = get_symbol_addr(symbol_table, "__gcov_var__ported")
+        data_int_addr = HexToInt(data_hex_addr)
+        self.logger.prn_inf("Address for [__gcov_var__ported] is %s" % data_hex_addr )
+
+        dump_hex_addr = get_symbol_addr(symbol_table, "__gcov_close__ported")
+        dump_int_addr = HexToInt(dump_hex_addr)
+        self.logger.prn_inf("Address for [__gcov_close__ported] is %s" % dump_hex_addr )
+
+        exit_hex_addr = get_symbol_addr(symbol_table, "collect_coverage")
+        exit_int_addr = HexToInt(exit_hex_addr)
+        self.logger.prn_inf("Address for [collect_coverage] is %s" % exit_hex_addr )
+
+
+
+        self.logger.prn_inf("Setting breakpoints...")
+        bkpt_dump = cpu.add_bpt_prog( dump_int_addr + 57 )
+        bkpt_exit  = cpu.add_bpt_prog( exit_int_addr + 43 )
+
+        self.logger.prn_inf("Removing old gcda files...")
+        remove_gcda()
+
+        self.__run_to_breakpoint()
+        stopped_loc = cpu.read_register('Core.R15')
+
+        while stopped_loc == bkpt_dump.address :
+
+            start_addr    = ByteToInt( cpu.read_memory( data_int_addr   , size=4 ) )
+            end_addr      = ByteToInt( cpu.read_memory( data_int_addr+4 , size=4 ) )
+            file_var_addr = ByteToInt( cpu.read_memory( data_int_addr+8 , size=4 ) )
+
+            file_var = r''
+            mem_char = " "
+
+            while ord(mem_char) != 0:
+                mem_char = cpu.read_memory(file_var_addr)
+                file_var += str(mem_char)
+                file_var_addr += 1
+
+            filename = file_var.rstrip(' \t\r\n\0')
+            self.logger.prn_inf("dumping to " + filename)
+            with open(filename, "wb") as f:
+                mem = cpu.read_memory(start_addr, count=(end_addr-start_addr))
+                f.write(mem)
+
+            if self.__run_to_breakpoint():
+                stopped_loc = cpu.read_register('Core.R15')
+            else:
+                stopped_loc = cpu.read_register('Core.R15')
+                break
+            
+
+        if stopped_loc == bkpt_exit.address:
+            self.logger.prn_inf("Coverage dump program run to the end.")
+        else:
+            self.logger.prn_wrn("Coverage dump ended somewhere else!!")
+        lcov_collect(os.path.basename(self.image))
+        
     def shutdown_simulator(self):
         """ shutdown fastmodel if any """
         if self.is_simulator_alive():
+            if self.config_name == "COVERAGE":
+                self.__CodeCoverage()
             self.logger.prn_inf("Fast-Model agent shutting down model")
             self.__closeConnection()
             self.model.release(shutdown=True)
