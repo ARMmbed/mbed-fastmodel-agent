@@ -23,6 +23,7 @@ import sys
 import time
 import socket
 import logging
+import subprocess
 from functools import partial
 
 class SimulatorError(Exception):
@@ -172,3 +173,44 @@ def find_free_port():
     s.close()
     return port
 
+    """ the following function mainly for coverage mode """
+
+def read_symbol(image):
+    """this function reads images symbol to a global variable"""
+    symbol_table = []
+    try:
+        symbol_table =  subprocess.check_output('arm-none-eabi-readelf -sW "{}"'.format(image), shell=True).split("\n")
+    except Exception as e:
+        print "Make sure you have arm-none-eabi-readelf tool in PATH"
+        print "ERROR - {}.".format(str(e))
+        sys.exit(1)
+    return symbol_table
+
+def get_symbol_addr(symbol_table, symbol_name):
+    """
+    Num:   Value  Size Type    Bind   Vis      Ndx Name
+    24: 0002f45a     0 NOTYPE  LOCAL  DEFAULT    2 init_bss
+    25: 0002f470     0 NOTYPE  LOCAL  DEFAULT    2 system_startup
+    26: 0002f468     0 NOTYPE  LOCAL  DEFAULT    2 zero
+    """
+    for line in symbol_table:
+        data = line.split()
+        if symbol_name in data:
+            return data[1]
+
+def ByteToInt( byteList ):
+    return int(''.join( [ "{:02x}".format(x) for x in reversed(byteList) ] ),16)
+
+def HexToInt( hex ):
+    return int(hex,16)
+    
+def lcov_collect(filename):
+    """this function reads images symbol to a global variable"""
+    subprocess.call('lcov -c -d . --no-external -o BUILD/{}.info'.format(filename), shell=True)
+        
+def remove_gcda(rootdir="."):
+    """this function removes gcda files"""
+    for root, dirs, files in os.walk(rootdir):
+        for file in files:
+            if file.endswith(".gcda"):
+                os.remove(os.path.join(root, file))

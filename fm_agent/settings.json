@@ -6,7 +6,7 @@
             "configs": {
                 "DEFAULT": "DEFAULT.conf",
                 "NETWORK": "NETWORK.conf",
-                "FAST":    "FAST.conf"
+                "COVERAGE":"COVERAGE.conf"
             }
         },
         "Linux":{
@@ -14,8 +14,9 @@
             "model_lib_path": "/work/model_libs",
             "configs": {
                 "DEFAULT": "DEFAULT.conf",
+                "FAST":    "FAST.conf",
                 "NETWORK": "NETWORK.conf",
-                "FAST":    "FAST.conf"
+                "COVERAGE":"COVERAGE.conf"
             }
         }
     },
