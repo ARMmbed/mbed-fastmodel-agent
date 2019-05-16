@@ -11,10 +11,24 @@ If user only need to run mbed OS applications or examples rather than Greentea t
 
 
 ## Requirements
-1. Make sure you have Arm Fast Models Libraries files installed to your host machines, as well as the Fast Models PyCADI.
-2. A valid Fast Models license been set up correctly.
-2. Greentea version 1.5.0 or later
-3. Htrun version 1.4.1 or later
+ 1. Make sure you have Arm Fast Models Libraries files installed to your host machines, as well as the Fast Models PyCADI.
+
+>please referencing [Fast Models User Guide](https://developer.arm.com/docs/100965/latest)
+
+ 2. A valid Fast Models license been set up correctly.
+
+>please referencing [Fast Models User Guide](https://developer.arm.com/docs/100965/latest)
+
+ 3. Greentea version 1.5.0 or later
+```
+pip install mbed-greentea -U
+mbedgt --version
+```
+ 4. Htrun version 1.4.1 or later
+```
+pip install mbed-host-tests -U
+mbedhtrun --version
+```
 
 ## Download
 ```
