@@ -34,12 +34,12 @@ def print_version():
     print(get_version())
 
 def print_models():
-    print list_fastmodels()
-    print "Import PyCADI Test ... {}".format("PASSED" if check_import() else "FAILED")
+    print(list_fastmodels())
+    print("Import PyCADI Test ... {}".format("PASSED" if check_import() else "FAILED"))
 
 def self_test():
-    print list_fastmodels(check_models=True)
-    print "Import PyCADI Test ... {}".format("PASSED" if check_import() else "FAILED")  
+    print(list_fastmodels(check_models=True))
+    print("Import PyCADI Test ... {}".format("PASSED" if check_import() else "FAILED"))  
 
 def list_fastmodels(check_models=False):
     """! List all models and configs in fm_agent"""
@@ -84,7 +84,7 @@ def list_fastmodels(check_models=False):
                         c_test_cell.append("PASSED" if resource.is_simulator_alive() else "FAILED")
                         resource.shutdown_simulator()
                     except Exception as e:
-                        print str(e)
+                        print(str(e))
                         c_test_cell.append("FAILED")
             else:
                 c_avail_cell.append("NO  'CONFIG FILE' NOT EXIST")

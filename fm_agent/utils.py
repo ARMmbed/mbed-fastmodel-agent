@@ -95,8 +95,8 @@ def check_import():
         import fm.debug
     except ImportError as e:
         for warning in warning_msgs:
-            print warning
-        print "Error: Failed to import fast models PyCADI!!!"
+            print(warning)
+        print("Error: Failed to import fast models PyCADI!!!")
         return False
     else:
         return True
@@ -181,8 +181,8 @@ def read_symbol(image):
     try:
         symbol_table =  subprocess.check_output('arm-none-eabi-readelf -sW "{}"'.format(image), shell=True).split("\n")
     except Exception as e:
-        print "Make sure you have arm-none-eabi-readelf tool in PATH"
-        print "ERROR - {}.".format(str(e))
+        print("Make sure you have arm-none-eabi-readelf tool in PATH")
+        print("ERROR - {}.".format(str(e)))
         sys.exit(1)
     return symbol_table
 
