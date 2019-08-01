@@ -1,21 +1,22 @@
 {
     "GLOBAL": {
         "Windows":{
-            "PyCADI_path": "C:\\Program Files\\ARM\\FastModelsPortfolio_11.4\\lib\\python27",
+            "PyCADI_path": "C:\\work\\model_libs\\python27",
             "model_lib_path": "C:\\work\\model_libs",
             "configs": {
                 "DEFAULT": "DEFAULT.conf",
                 "NETWORK": "NETWORK.conf",
-                "FAST":    "FAST.conf"
+                "COVERAGE":"COVERAGE.conf"
             }
         },
         "Linux":{
-            "PyCADI_path": "/home/user/ARM/FastModelsPortfolio_11.4/lib/python2.7/",
-            "model_lib_path": "/home/user/model_libs",
+            "PyCADI_path": "/work/model_libs/python2.7/",
+            "model_lib_path": "/work/model_libs",
             "configs": {
                 "DEFAULT": "DEFAULT.conf",
+                "FAST":    "FAST.conf",
                 "NETWORK": "NETWORK.conf",
-                "FAST":    "FAST.conf"
+                "COVERAGE":"COVERAGE.conf"
             }
         }
     },

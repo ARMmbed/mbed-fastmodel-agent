@@ -4,17 +4,31 @@
 
 mbed-fastmodel-agent is a python module for Mbed OS GreenTea testing framework using FastModels FVP (Fixed Virtual Platforms).
 
-This module only designed to work with [Greentea](https://github.com/ARMmbed/greentea) and [Htrun](https://github.com/ARMmbed/htrun),
+This module only designed to work with [Greentea](https://github.com/ARMmbed/mbed-os-tools/tree/master/packages/mbed-greentea) and [Htrun](https://github.com/ARMmbed/mbed-os-tools/tree/master/packages/mbed-host-tests),
 It enables enables Fast Models to run Mbed OS Greentea test suites. 
 
 If user only need to run mbed OS applications or examples rather than Greentea tests on Fast Models, please referencing [this mbed OS documents](https://os.mbed.com/docs/v5.10/tools/fast-models.html)
 
 
 ## Requirements
-1. Make sure you have Arm Fast Models Libraries files installed to your host machines, as well as the Fast Models PyCADI.
-2. A valid Fast Models license been set up correctly.
-2. Install [Greentea](https://github.com/ARMmbed/greentea) latest master from GitHub (current 1.4.0 release do not contains the support for Fast Models)
-3. Htrun Version 1.4.1 or later
+ 1. Make sure you have Arm Fast Models Libraries files installed to your host machines, as well as the Fast Models PyCADI.
+
+>please referencing [Fast Models User Guide](https://developer.arm.com/docs/100965/latest)
+
+ 2. A valid Fast Models license been set up correctly.
+
+>please referencing [Fast Models User Guide](https://developer.arm.com/docs/100965/latest)
+
+ 3. Greentea version 1.5.0 or later
+```
+pip install mbed-greentea -U
+mbedgt --version
+```
+ 4. Htrun version 1.4.1 or later
+```
+pip install mbed-host-tests -U
+mbedhtrun --version
+```
 
 ## Download
 ```
@@ -114,4 +128,5 @@ Then users need to edit `mbed-fastmodel-agent\fm_agent\settings.json` file eithe
 Key `configs_add` can be added for additional config files for each model, Or Key `config` can be added to overwrite `GLOBAL` config files.
 
 ## Known limitations:
-1. Fast Models normally have 3 or 4 serial terminal ports. But currently only one port is supported at moment.
+1. Fast Models normally have 3 or 4 serial terminal ports. But currently only one port is used at moment.
+
