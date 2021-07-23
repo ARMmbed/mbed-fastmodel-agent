@@ -1,63 +1,43 @@
 {
-    "GLOBAL": {
-        "Windows":{
-            "PyCADI_path": "C:\\work\\model_libs\\python27",
-            "model_lib_path": "C:\\work\\model_libs",
-            "configs": {
-                "DEFAULT": "DEFAULT.conf",
-                "NETWORK": "NETWORK.conf",
-                "COVERAGE":"COVERAGE.conf"
-            }
-        },
-        "Linux":{
-            "PyCADI_path": "/work/model_libs/python2.7/",
-            "model_lib_path": "/work/model_libs",
-            "configs": {
-                "DEFAULT": "DEFAULT.conf",
-                "FAST":    "FAST.conf",
-                "NETWORK": "NETWORK.conf",
-                "COVERAGE":"COVERAGE.conf"
-            }
+    "COMMON": {
+        "IRIS_path": "/home/qinshi01/FVP_Corstone_SSE-300_Ethos-U55/Iris/Python/",
+        "configs": {
+            "MPS2": "MPS2.conf",
+            "NETWORK": "NETWORK.conf"
         }
     },
+    "FVP_CS300_U55": {
+        "model_binary": "/home/qinshi01/FVP_Corstone_SSE-300_Ethos-U55/models/Linux64_GCC-6.4/FVP_Corstone_SSE-300_Ethos-U55",
+        "terminal_component": "component.FVP_MPS3_Corstone_SSE_300.mps3_board.telnetterminal0",
+        "configs": {
+            "MPS3": "MPS3.conf"
+        }
+        
+    },
+
     "FVP_MPS2_M0": {
-        "Windows":{
-            "model_lib": "FVP_MPS2_Cortex-M0.dll"
-        },
-        "Linux":{
-            "model_lib": "FVP_MPS2_Cortex-M0.so"
-        }
+        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M0",
+        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
+
     "FVP_MPS2_M0P": {
-        "Windows":{
-            "model_lib": "FVP_MPS2_Cortex-M0plus.dll"
-        },
-        "Linux":{
-            "model_lib": "FVP_MPS2_Cortex-M0plus.so"
-        }
+
+        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M0plus",
+        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
+
     "FVP_MPS2_M3": {
-        "Windows":{
-            "model_lib": "FVP_MPS2_Cortex-M3.dll"
-        },
-        "Linux":{
-            "model_lib": "FVP_MPS2_Cortex-M3.so"
-        }
+        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M3",
+        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
+
     "FVP_MPS2_M4": {
-        "Windows":{
-            "model_lib": "FVP_MPS2_Cortex-M4.dll"
-        },
-        "Linux":{
-            "model_lib": "FVP_MPS2_Cortex-M4.so"
-        }
+        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M4",
+        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
+
     "FVP_MPS2_M7": {
-        "Windows":{
-            "model_lib": "FVP_MPS2_Cortex-M7.dll"
-        },
-        "Linux":{
-            "model_lib": "FVP_MPS2_Cortex-M7.so"
-        }
+        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M7",
+        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     }
 }

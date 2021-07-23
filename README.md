@@ -11,23 +11,19 @@ If user only need to run mbed OS applications or examples rather than Greentea t
 
 
 ## Requirements
- 1. Make sure you have Arm Fast Models Libraries files installed to your host machines, as well as the Fast Models PyCADI.
+ 1. Make sure you have Arm Fast Models FVPs as well as the Fast Models Iris python modules installed. This Package is not including neither of them. Also a valid license to the Fastmodels could be required.
 
 >please referencing [Fast Models User Guide](https://developer.arm.com/docs/100965/latest)
 
- 2. A valid Fast Models license been set up correctly.
-
->please referencing [Fast Models User Guide](https://developer.arm.com/docs/100965/latest)
-
- 3. Greentea version 1.5.0 or later
+ 2. Use Greentea and mbedhtrun version 1.5.0 or later
 ```
-pip install mbed-greentea -U
+# Check versions
 mbedgt --version
-```
- 4. Htrun version 1.4.1 or later
-```
-pip install mbed-host-tests -U
 mbedhtrun --version
+
+# Update mbedgt and mbedhtrun
+pip install mbed-greentea -U
+pip install mbed-host-tests -U
 ```
 
 ## Download
@@ -36,16 +32,15 @@ git clone https://github.com/ARMmbed/mbed-fastmodel-agent.git
 cd mbed-fastmodel-agent
 ```
 
-## Settings before installation
+## Configurations before installation
 1. Edit the configuration file `fm_agent\settings.json` 
-2. Change `model_lib_path` value in the `GLOBAL` section to your Fast Models installation folder (where contains all fastmodel libs).
-3. Change `PyCADI_path` value to PyCADI folder, alternatively you can have `PVLIB_HOME` environment variable set on your host
-4. Optional: edit individual models if necessary
-5. Optional: add configs to models if necessary
+3. Change `IRIS_path` value to IRIS Python folder
+3. Edit individual models binarys file path
+4. Optional: customize configs to models
 
 ## Installation
 ```
-python setup.py install
+sudo python setup.py install
 ```
 *NOTE. you will need to re-run the install command after you changed the "settings.json" or any config file*
 
@@ -57,29 +52,24 @@ python setup.py install
 ```
 you should be able to see a table like:
 ```
-+--------------+-----------------------------------------------+-------------+--------------+--------------+
-| MODEL NAME   | MODEL LIB full path                           | CONFIG NAME | CONFIG FILE  | AVAILABILITY |
-+--------------+-----------------------------------------------+-------------+--------------+--------------+
-|              |                                               | DEFAULT     | DEFAULT.conf | YES          |
-| FVP_MPS2_M0  | C:\work\model_libs\FVP_MPS2_Cortex-M0.dll     | FAST        | FAST.conf    | YES          |
-|              |                                               | NETWORK     | NETWORK.conf | YES          |
-+--------------+-----------------------------------------------+-------------+--------------+--------------+
-|              |                                               | DEFAULT     | DEFAULT.conf | YES          |
-| FVP_MPS2_M0P | C:\work\model_libs\FVP_MPS2_Cortex-M0plus.dll | FAST        | FAST.conf    | YES          |
-|              |                                               | NETWORK     | NETWORK.conf | YES          |
-+--------------+-----------------------------------------------+-------------+--------------+--------------+
-|              |                                               | DEFAULT     | DEFAULT.conf | YES          |
-| FVP_MPS2_M3  | C:\work\model_libs\FVP_MPS2_Cortex-M3.dll     | FAST        | FAST.conf    | YES          |
-|              |                                               | NETWORK     | NETWORK.conf | YES          |
-+--------------+-----------------------------------------------+-------------+--------------+--------------+
-|              |                                               | DEFAULT     | DEFAULT.conf | YES          |
-| FVP_MPS2_M4  | C:\work\model_libs\FVP_MPS2_Cortex-M4.dll     | FAST        | FAST.conf    | YES          |
-|              |                                               | NETWORK     | NETWORK.conf | YES          |
-+--------------+-----------------------------------------------+-------------+--------------+--------------+
-|              |                                               | DEFAULT     | DEFAULT.conf | YES          |
-| FVP_MPS2_M7  | C:\work\model_libs\FVP_MPS2_Cortex-M7.dll     | FAST        | FAST.conf    | YES          |
-|              |                                               | NETWORK     | NETWORK.conf | YES          |
-+--------------+-----------------------------------------------+-------------+--------------+--------------+
++--------------+-----------------------------------------------+-------------+---------------+--------------+
+| MODEL NAME   | MODEL Binary Full Path                        | CONFIG NAME | CONFIG FILE   | AVAILABILITY |
++--------------+-----------------------------------------------+-------------+---------------+--------------+
+| FVP_MPS2_M0  | C:\work\models\FVP_MPS2_Cortex-M0.exe         | MPS2        | MPS2.conf     | YES          |
+|              |                                               | COVERAGE    | COVERAGE.conf | YES          |
++--------------+-----------------------------------------------+-------------+---------------+--------------+
+| FVP_MPS2_M0P | C:\work\models\FVP_MPS2_Cortex-M0plus.exe     | MPS2        | MPS2.conf     | YES          |
+|              |                                               | COVERAGE    | COVERAGE.conf | YES          |
++--------------+-----------------------------------------------+-------------+---------------+--------------+
+| FVP_MPS2_M3  | C:\work\models\FVP_MPS2_Cortex-M3.exe         | MPS2        | MPS2.conf     | YES          |
+|              |                                               | COVERAGE    | COVERAGE.conf | YES          |
++--------------+-----------------------------------------------+-------------+---------------+--------------+
+| FVP_MPS2_M4  | C:\work\models\FVP_MPS2_Cortex-M4.exe         | MPS2        | MPS2.conf     | YES          |
+|              |                                               | COVERAGE    | COVERAGE.conf | YES          |
++--------------+-----------------------------------------------+-------------+---------------+--------------+
+| FVP_MPS2_M7  | C:\work\models\FVP_MPS2_Cortex-M7.exe         | MPS2        | MPS2.conf     | YES          |
+|              |                                               | COVERAGE    | COVERAGE.conf | YES          |
++--------------+-----------------------------------------------+-------------+---------------+--------------+
 ```
 ### Self test for the settings
 ```
@@ -92,13 +82,13 @@ This will try to launch every model in the above list to verify them, so will ta
 ```
     mbedgt --fm <model_name>:<config_name>
 ```
->e.g. `mbedgt --fm FVP_MPS2_M3:DEFAULT`
+>e.g. `mbedgt --fm FVP_MPS2_M3:MPS2`
 
 ### run mbed test with htrun
 ```
-    mbedhtrun --fm <config_name> -m <model_name> -f <test_image>
+    mbedhtrun --fm <config_name> -m <model_name> -f <test_image> <-e host_test_path>
 ```
->e.g. `mbedhtrun --fm DEFAULT -m FVP_MPS2_M3 -f test.elf`
+>e.g. `mbedhtrun -m FVP_MPS2_M3  --fm MPS2 -f test.elf -e ./host_tests`
 
 *<model_name> : The name to fastmodel target supported in mbed os*
 
@@ -108,9 +98,10 @@ This will try to launch every model in the above list to verify them, so will ta
 
 The mbed fastmodel_agent module allow user to configure each individual module via a config file.
 by default, 3 config files are provided:
-* DEFAULT - default settings
-* FAST - based on default turned off speed limit 
-* NETWORK - based on default enabled Ethernet
+* MPS2 - default settings for MPS2 based platforms
+* MPS3 - default settings for MPS3 based platforms
+* COVERAGE - configuration for MPS2 Code Coverage Test 
+
 
 ## change config files
 
@@ -123,9 +114,9 @@ The config files are standard Fast Models config file. for more detail about det
 
 Users are able to add their own customized config file to the `mbed-fastmodel-agent\fm_agent\configs` directory.
 
-Then users need to edit `mbed-fastmodel-agent\fm_agent\settings.json` file either in `GLOBAL` section or individual models.
+Then users need to edit `mbed-fastmodel-agent\fm_agent\settings.json` file either in `COMMON` section or individual models.
 
-Key `configs_add` can be added for additional config files for each model, Or Key `config` can be added to overwrite `GLOBAL` config files.
+Key `configs_add` can be added for additional config files for each model, Or Key `config` can be added to overwrite `COMMON` config files.
 
 ## Known limitations:
 1. Fast Models normally have 3 or 4 serial terminal ports. But currently only one port is used at moment.
