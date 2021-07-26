@@ -18,9 +18,9 @@ limitations under the License.
 
 import sys
 import os
-from fm_agent import FastmodelAgent
-from fm_agent import SimulatorError
-from fm_agent import check_import
+from .fm_agent import FastmodelAgent
+from .fm_agent import SimulatorError
+from .utils import check_import
 from prettytable import PrettyTable
 import argparse
 
@@ -35,11 +35,15 @@ def print_version():
 
 def print_models():
     print(list_fastmodels())
-    print("Import PyCADI Test ... {}".format("PASSED" if check_import() else "FAILED"))
+    result_pass = check_import()
+    print("Import IRIS Test ... {}".format("PASSED" if result_pass else "FAILED"))
+    return result_pass
 
 def self_test():
     print(list_fastmodels(check_models=True))
-    print("Import PyCADI Test ... {}".format("PASSED" if check_import() else "FAILED"))  
+    result_pass = check_import()
+    print("Import IRIS Test ... {}".format("PASSED" if result_pass else "FAILED"))
+    return result_pass
 
 def list_fastmodels(check_models=False):
     """! List all models and configs in fm_agent"""
@@ -47,7 +51,7 @@ def list_fastmodels(check_models=False):
     resource = FastmodelAgent()
     model_dict = resource.list_avaliable_models()
 
-    columns = ['MODEL NAME', "MODEL LIB full path", 'CONFIG NAME' , 'CONFIG FILE', 'AVAILABILITY']
+    columns = ['MODEL NAME', "MODEL Binary Full Path", 'CONFIG NAME' , 'CONFIG FILE', 'AVAILABILITY']
     if check_models:
         columns.append('SELF TEST')
 
@@ -58,7 +62,7 @@ def list_fastmodels(check_models=False):
         pt.align[col] = 'l'
 
     for model_name, configs in sorted(model_dict.items()):
-        lib_path = resource.list_model_lib(model_name)
+        binary_path = resource.list_model_binary(model_name)
 
         c_names_cell=[]
         c_files_cell=[]
@@ -70,12 +74,12 @@ def list_fastmodels(check_models=False):
             c_names_cell.append(config_name)
             c_files_cell.append(config_file)
 
-        for file in c_files_cell:
-            if not os.path.exists(lib_path):
-                c_avail_cell.append("NO  'MODEL LIB' NOT EXIST")
+
+            if not os.path.exists(binary_path):
+                c_avail_cell.append("NO  'MODEL BINARY' NOT EXIST")
                 if check_models:
                     c_test_cell.append("SKIPPED")
-            elif resource.check_config_exist(file):
+            elif resource.check_config_exist(config_file):
                 c_avail_cell.append("YES")
                 if check_models:
                     try:
@@ -92,13 +96,13 @@ def list_fastmodels(check_models=False):
                     c_test_cell.append("SKIPPED")
 
         MAX_WIDTH = 60
-        lib_path_cell = [lib_path[i:i+MAX_WIDTH] for i in range(0, len(lib_path), MAX_WIDTH)]
+        binary_path_cell = [binary_path[i:i+MAX_WIDTH] for i in range(0, len(binary_path), MAX_WIDTH)]
         
         padding_lines_col1 = "\n" * ((len(c_names_cell)-1) // 2)
-        padding_lines_col2 = "\n" * ((len(c_names_cell)-len(lib_path_cell)) // 2)
+        padding_lines_col2 = "\n" * ((len(c_names_cell)-len(binary_path_cell)) // 2)
         
         row_list = [padding_lines_col1+model_name,
-                    padding_lines_col2+"\n".join(lib_path_cell),
+                    padding_lines_col2+"\n".join(binary_path_cell),
                     "\n".join(c_names_cell),
                     "\n".join(c_files_cell),
                     "\n".join(c_avail_cell)]
@@ -124,8 +128,6 @@ def cli_parser(in_args):
     
 def main():
     args = cli_parser(sys.argv[1:])
-    ret_code = args.command()
-    if not ret_code:
-        ret_code = 0
-    sys.exit(ret_code)
-
+    success = args.command()
+    if not success:
+        sys.exit(1)

@@ -23,8 +23,8 @@ import sys
 import time
 import socket
 import logging
-import subprocess
 from functools import partial
+from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
 
 class SimulatorError(Exception):
     """
@@ -53,46 +53,33 @@ class FMLogger(object):
         self.prn_txd = partial(__prn_log, self, 'TXD')
         self.prn_rxd = partial(__prn_log, self, 'RXD')    
 
-def get_PyCADI_path(self):
-    """ get the PyCADI path from the config file
-        @return PyCADI path if setting exist 
+def get_IRIS_path(self):
+    """ get the IRIS path from the config file
+        @return IRIS path if setting exist 
         @return None if not exist
     """
-    if "PyCADI_path" in self.json_configs["GLOBAL"]:
-        return self.json_configs["GLOBAL"][self.os]["PyCADI_path"]
+    if "IRIS_path" in self.json_configs["COMMON"]:
+        return self.json_configs["COMMON"]["IRIS_path"]
     else:
         return None
         
 def check_import():
-    """ Append PVLIB_HOME to PATH, so import PyCADI fm.debug can be imported """
+    """ try PyIRIS API iris.debug can be imported """
     warning_msgs = []
     from .fm_config import FastmodelConfig
     config = FastmodelConfig()
 
-    fm_pycadi_path = config.get_PyCADI_path()
-    if fm_pycadi_path:
-        if os.path.exists(fm_pycadi_path):
-            sys.path.append(fm_pycadi_path)
+    fm_IRIS_path = config.get_IRIS_path()
+    if fm_IRIS_path:
+        if os.path.exists(fm_IRIS_path):
+            sys.path.append(fm_IRIS_path)
         else:
-            warning_msgs.append("Warning: Could not locate PyCADI_path '%s'" % fm_pycadi_path)
+            warning_msgs.append("Warning: Could not locate IRIS_path '%s'" % fm_IRIS_path)
     else:
-        warning_msgs.append("Warning: PyCADI_path not set in settings.json")
-    
-    if 'PVLIB_HOME' in os.environ:
-        #FastModels PyCADI have different folder on different host OS
-        fm_pycadi_path1 = os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python27')
-        fm_pycadi_path2 = os.path.join(os.environ['PVLIB_HOME'], 'lib', 'python2.7')
-        if os.path.exists(fm_pycadi_path1):
-            sys.path.append(fm_pycadi_path1)
-        elif os.path.exists(fm_pycadi_path2):
-            sys.path.append(fm_pycadi_path2)
-        else:
-            warning_msgs.append("Warning: Could not locate PyCADI in PVLIB_HOME/lib/python27")
-    else:
-        warning_msgs.append("Warning: 'PVLIB_HOME' environment variable not been set.")
+        warning_msgs.append("Warning: IRIS_path not set in settings.json")
 
     try:
-        import fm.debug
+        import iris.debug
     except ImportError as e:
         for warning in warning_msgs:
             print(warning)
@@ -100,80 +87,6 @@ def check_import():
         return False
     else:
         return True
-    
-def redirect_file():
-    time.sleep(1)
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-    os.dup2(tee.stdin.fileno(), sys.stdout.fileno())
-    
-def get_log():
-    data=[]
-    sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)
-    os.dup2(SAVE, sys.stdout.fileno())
-
-    tee.terminate()
-    
-    with open (_TEMP_STDOUT,"r") as f:
-        contents = f.readlines()
-        for line in contents:
-            line = line.strip()
-            if line == "":
-                pass
-            else:
-                data.append(line)
-    return data
-    
-def check_host_os():
-    """ check and return the type of host operating system """
-    if platform.system().startswith("Windows"):
-        return"Windows"
-    elif platform.system().startswith("Linux"):
-        return "Linux"
-    else:
-        return "UNKNOWN"
-
-def remove_comments(line):
-    """remove # comments from given line """
-    i = line.find("#")
-    if i >= 0:
-        line = line[:i]
-    return line.strip()
-
-def strip_quotes(value):
-    """strip both single or double quotes"""
-    value = value.strip()
-    if "\"" in value:
-        return value.strip("\"")
-    elif "\'" in value:
-        return value.strip("\'")
-    else:
-        return value
-
-def boolean_filter(value):
-
-    """ try to determine if give string match boolean type
-        @return boolean if the value matches
-        @return the original value if not match
-    """
-
-    value = strip_quotes(value)
-    
-    if value in ["TRUE","True","true","1"]:
-        return True
-    elif value in ["FALSE","False","false","0"]:
-        return False
-    else:
-        return value
-
-def find_free_port():
-    """try to determine a free random port"""
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(('localhost', 0))
-    addr, port = s.getsockname()
-    s.close()
-    return port
-
-    """ the following function mainly for coverage mode """
 
 def read_symbol(image):
     """this function reads images symbol to a global variable"""
@@ -214,3 +127,21 @@ def remove_gcda(rootdir="."):
         for file in files:
             if file.endswith(".gcda"):
                 os.remove(os.path.join(root, file))
+
+def launch_FVP_IRIS(model_exec, config_file='',  lines_out=6):
+    """Launch FVP with IRIS Server listening"""
+    cmd_line = [model_exec, '-I', '-p']
+    if config_file:
+        cmd_line.extend(['-f' , config_file])
+    fm_proc = Popen(cmd_line,stdout=PIPE,stderr=STDOUT)
+
+    stdout=''
+    port = 0
+
+    for num in range(lines_out):
+        line = fm_proc.stdout.readline().decode()
+        if line.startswith("Iris server started listening to port"):
+            port = int(line[-5:])
+        stdout += line
+        
+    return (fm_proc, port, stdout)

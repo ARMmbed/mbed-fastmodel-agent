@@ -18,9 +18,6 @@ limitations under the License.
 
 import json
 import os.path
-from .utils import check_host_os
-from .utils import remove_comments
-from .utils import boolean_filter
 from .utils import SimulatorError
 
 class FastmodelConfig():
@@ -35,7 +32,6 @@ class FastmodelConfig():
 
         with open(settings_json_file,"r") as config_json:    
             self.json_configs = json.load(config_json)
-        self.os = check_host_os();
         
     def get_all_configs (self):
         """ search every config for all the models in SETTINGS_FILE
@@ -43,40 +39,46 @@ class FastmodelConfig():
         """
         all_config_dict={}
         for model in self.json_configs.keys():
-            if model != "GLOBAL":
+            if model != "COMMON":
                 all_config_dict[model]=self.get_configs(model)
 
         return all_config_dict
 
-    def get_PyCADI_path(self):
-        """ get the PyCADI path from the config file
-            @return PyCADI path if setting exist 
+    def get_IRIS_path(self):
+        """ get the IRIS path from the config file
+            @return IRIS path if setting exist 
             @return None if not exist
         """
-        if "PyCADI_path" in self.json_configs["GLOBAL"][self.os]:
-            return self.json_configs["GLOBAL"][self.os]["PyCADI_path"]
+        if "IRIS_path" in self.json_configs["COMMON"]:
+            return self.json_configs["COMMON"]["IRIS_path"]
         else:
             return None
 
-    def get_model_lib(self,model_name):
-        """ get the model lib path and name from the config file
-            @return full name and path to the model_lib
+    def get_model_binary(self,model_name):
+        """ get the model binary path and name from the config file
+            @return full name and path to the model_binary
             @return None if not exist
         """
         if model_name not in self.json_configs:
             return None
 
-        if "model_lib" not in self.json_configs[model_name][self.os]:
+        if "model_binary" not in self.json_configs[model_name]:
+            return None
+  
+        return self.json_configs[model_name]["model_binary"]
+
+    def get_model_terminal_comp(self,model_name):
+        """ get the model terminal compoment name from the config file
+            @return full name to model terminal compoment
+            @return None if not exist
+        """
+        if model_name not in self.json_configs:
             return None
 
-        model_lib_name  = self.json_configs[model_name][self.os]["model_lib"]   
-
-        if "model_lib_path" in self.json_configs[model_name][self.os]:
-            local_path = self.json_configs[model_name][self.os]["model_lib_path"]
-            return str(os.path.join( local_path , model_lib_name ))
-        else:
-            global_path = self.json_configs["GLOBAL"][self.os]["model_lib_path"]
-            return str(os.path.join( global_path , model_lib_name ))
+        if "terminal_component" not in self.json_configs[model_name]:
+            return None
+  
+        return self.json_configs[model_name]["terminal_component"]
 
     def get_configs (self,model_name):
         """ Search for configs with given model 
@@ -86,55 +88,13 @@ class FastmodelConfig():
         if model_name not in self.json_configs:
             return None
 
-        if "configs" in self.json_configs[model_name][self.os]:
-            local_configs = self.json_configs[model_name][self.os]["configs"].copy()
+        if "configs" in self.json_configs[model_name]:
+            local_configs = self.json_configs[model_name]["configs"].copy()
             return local_configs
-        elif "configs_add" in self.json_configs[model_name][self.os]:
-            global_configs  = self.json_configs["GLOBAL"][self.os]["configs"].copy()
-            addtion_configs = self.json_configs[model_name][self.os]["configs_add"].copy()
+        elif "configs_add" in self.json_configs[model_name]:
+            global_configs  = self.json_configs["COMMON"]["configs"].copy()
+            addtion_configs = self.json_configs[model_name]["configs_add"].copy()
             return dict(global_configs,**addtion_configs)
         else:
-            global_configs  = self.json_configs["GLOBAL"][self.os]["configs"].copy()
+            global_configs  = self.json_configs["COMMON"]["configs"].copy()
             return global_configs        
-
-    def parse_params_file (self, config_file , in_module=True):
-        """ read fastmodel parameters from given config_file
-            @param config_file need to be file name only
-            @param in_module default is True, means the config_file inside module folder
-            @param if in_module set to False, will looking for config_file in pwd
-            @return if config_file read failed, function will throw SimulatorError
-            @return if config_file format is wrong, function will throw SimulatorError
-            @return if config_file been parsed successfully, will return a dictionary of parameters 
-        """
-        if in_module:
-            filepath = os.path.join( os.path.dirname(__file__) ,"configs" , config_file )
-        else:
-            filepath = os.path.join( os.getcwd() , config_file )
-            
-        if not os.path.exists(filepath):
-            raise SimulatorError("model config file not exit: %s" % filepath)
-            return None
-        
-        params_dict={}
-        with open(filepath,'r') as CONF_file: 
-            param_data = CONF_file.readlines()
-        for line in param_data:
-            line = remove_comments(line)
-            if line:
-                if line.count("=")==0:
-                    raise SimulatorError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
-                    return None
-                elif line.count("=")>1:
-                    raise SimulatorError("Wrong format in config %s,\nline %s having more than one '='" % (filepath,line))
-                    return None
-                elif line.startswith("="):
-                    raise SimulatorError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
-                    return None
-                elif line.endswith("="):
-                    raise SimulatorError("Wrong format in config %s,\nline %s should match format key=values" % (filepath,line))
-                    return None
-                else:
-                    param_key,param_value = line.split("=")
-                    params_dict[param_key.strip()] = boolean_filter(param_value) 
-                    
-        return params_dict

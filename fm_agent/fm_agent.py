@@ -64,22 +64,30 @@ class FastmodelAgent():
             self.logger.prn_err("Please provided the name to a fastmodel!!")
             self.__guide()
             raise SimulatorError("fastmodel_name not provided!")
-        self.model_lib = self.configuration.get_model_lib(self.fastmodel_name)
+        self.model_binary = self.configuration.get_model_binary(self.fastmodel_name)
 
-        if not self.model_lib:
-            self.logger.prn_err("NO model_lib available for '%s'"% self.fastmodel_name)
+        if not self.model_binary:
+            self.logger.prn_err("NO model_binary available for '%s'"% self.fastmodel_name)
             self.__guide()
             raise SimulatorError("fastmodel '%s' not available" % (self.fastmodel_name))
             
         config_dict = self.configuration.get_configs(self.fastmodel_name)
         
         if config_dict and self.config_name in config_dict:
-            self.model_params = self.configuration.parse_params_file(config_dict[self.config_name])
+            config_file = config_dict[self.config_name]
+            self.model_config_file = os.path.join( os.path.dirname(__file__) ,"configs" , config_file )
+
         elif os.path.exists(os.path.join( os.getcwd(), self.config_name )):
-            self.model_params = self.configuration.parse_params_file(self.config_name,in_module=False)
+            self.model_config_file = os.path.join( os.getcwd() , config_name )
         else:
             self.__guide()
             raise SimulatorError("No config %s avaliable for fastmodel %s" % (self.config_name,self.fastmodel_name))
+        
+        self.model_terminal = self.configuration.get_model_terminal_comp(self.fastmodel_name)
+
+        if not self.model_terminal:
+            self.logger.prn_err("NO terminal_compoment defined for '%s'"% self.fastmodel_name)
+            raise SimulatorError("fastmodel '%s' not defined terminal compoment" % (self.fastmodel_name))
 
     def __connect_terminal(self):
         """ connect socket terminal to a launched fastmodel"""
@@ -105,13 +113,16 @@ class FastmodelAgent():
     def start_simulator(self):
         """ launch given fastmodel with configs """
         if check_import():
-            import fm.debug
-            self.model = fm.debug.LibraryModel(self.model_lib, self.model_params)
+            import iris.debug
+            proc, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file)
+            print(outs)
+            self.model = iris.debug.NetworkModel('localhost',IRIS_port)
             # check which host socket port is used for terminal0
-            terminal = self.model.get_target('fvp_mps2.telnetterminal0')
-            self.port = terminal.read_register('Port')
+            terminal = self.model.get_target(self.model_terminal)
+            self.port = terminal.read_register('Default.Port')
             self.host = "localhost"
             self.image = None
+
             return True
         else:
             raise SimulatorError("fastmodel product was NOT installed correctly")
@@ -151,11 +162,16 @@ class FastmodelAgent():
             self.__closeConnection()
             self.model.release(shutdown=True)
             time.sleep(1)
-            import fm.debug
-            self.model = fm.debug.LibraryModel(self.model_lib, self.model_params)
+            import iris.debug
+
+            proc, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file)
+            if IRIS_port==0:
+                print(outs)
+                return False
+            self.model = iris.debug.NetworkModel('localhost',IRIS_port)
             # check which host socket port is used for terminal0
-            terminal = self.model.get_target('fvp_mps2.telnetterminal0')
-            self.port = terminal.read_register('Port')
+            terminal = self.model.get_target(self.model_terminal)
+            self.port = terminal.read_register('Default.Port')
             cpu = self.model.get_cpus()[0]
             if self.image:
                 cpu.load_application(self.image)
@@ -172,12 +188,12 @@ class FastmodelAgent():
         if not self.__socketConnected():
             return None
         
-        data = str()
+        data = bytearray()
         read_stop = False
 
         while not read_stop:
             try:
-                char=''
+                char=bytearray()
                 char = self.socket.recv(1)
             except socket.timeout as eto:
                 read_stop=True
@@ -205,7 +221,7 @@ class FastmodelAgent():
 
         try:
             for char in payload:
-                self.socket.sendall(char)
+                self.socket.sendall(char.encode())
                 time.sleep(0.01)
             if log:
                 self.logger.prn_txd(payload)
@@ -325,16 +341,12 @@ class FastmodelAgent():
         """ return a dictionary of models and configs """
         return self.configuration.get_all_configs()
 
-    def list_model_lib(self, model_name):
-        """ return model lib full path of give model_name """
-        return self.configuration.get_model_lib(model_name)
+    def list_model_binary(self, model_name):
+        """ return model binary full path of give model_name """
+        return self.configuration.get_model_binary(model_name)
         
     def check_config_exist(self,filename):
         """ return the presents of give config name
         """
-
         filepath = os.path.join( os.path.dirname(__file__), "configs" , filename )
-
         return os.path.exists(filepath)
-
-
