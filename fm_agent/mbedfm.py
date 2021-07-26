@@ -35,11 +35,15 @@ def print_version():
 
 def print_models():
     print(list_fastmodels())
-    print("Import IRIS Test ... {}".format("PASSED" if check_import() else "FAILED"))
+    result_pass = check_import()
+    print("Import IRIS Test ... {}".format("PASSED" if result_pass else "FAILED"))
+    return result_pass
 
 def self_test():
     print(list_fastmodels(check_models=True))
-    print("Import IRIS Test ... {}".format("PASSED" if check_import() else "FAILED"))  
+    result_pass = check_import()
+    print("Import IRIS Test ... {}".format("PASSED" if result_pass else "FAILED"))
+    return result_pass
 
 def list_fastmodels(check_models=False):
     """! List all models and configs in fm_agent"""
@@ -124,8 +128,6 @@ def cli_parser(in_args):
     
 def main():
     args = cli_parser(sys.argv[1:])
-    ret_code = args.command()
-    if not ret_code:
-        ret_code = 0
-    sys.exit(ret_code)
-
+    success = args.command()
+    if not success:
+        sys.exit(1)

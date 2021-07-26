@@ -1,0 +1,29 @@
+# Pull-Request Test
+name: PR-Check Build and Run
+
+on:
+  # Triggers the workflow on pull request
+  pull_request:
+
+jobs:
+
+  Corstone300:
+    runs-on: ubuntu-latest
+    # Run this this job inside container
+    container: mbedos/mbed-os-env-fm:corstone300
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Unit Test 
+        run: python setup.py test
+
+      - name: Install Test
+        run: |
+          rm fm_agent/settings.json
+          cp .github/ci_test_settings.json fm_agent/settings.json
+          python setup.py install
+
+      - name: Run Self Test
+        run: mbedfm --self-test

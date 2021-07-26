@@ -1,13 +1,13 @@
 {
     "COMMON": {
-        "IRIS_path": "/home/qinshi01/FVP_Corstone_SSE-300_Ethos-U55/Iris/Python/",
+        "IRIS_path": "/opt/FVP_Corstone_SSE-300_Ethos-U55/Iris/Python/",
         "configs": {
             "MPS2": "MPS2.conf",
             "NETWORK": "NETWORK.conf"
         }
     },
     "FVP_CS300_U55": {
-        "model_binary": "/home/qinshi01/FVP_Corstone_SSE-300_Ethos-U55/models/Linux64_GCC-6.4/FVP_Corstone_SSE-300_Ethos-U55",
+        "model_binary": "/opt/FVP_Corstone_SSE-300_Ethos-U55/models/Linux64_GCC-6.4//FVP_Corstone_SSE-300_Ethos-U55",
         "terminal_component": "component.FVP_MPS3_Corstone_SSE_300.mps3_board.telnetterminal0",
         "configs": {
             "MPS3": "MPS3.conf"
@@ -16,28 +16,28 @@
     },
 
     "FVP_MPS2_M0": {
-        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M0",
+        "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M0",
         "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
 
     "FVP_MPS2_M0P": {
 
-        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M0plus",
+        "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M0plus",
         "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
 
     "FVP_MPS2_M3": {
-        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M3",
+        "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M3",
         "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
 
     "FVP_MPS2_M4": {
-        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M4",
+        "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M4",
         "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     },
 
     "FVP_MPS2_M7": {
-        "model_binary": "/home/qinshi01/FM_11.15/FVP_MPS2_Cortex-M7",
+        "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M7",
         "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
     }
 }
