@@ -3,7 +3,7 @@
         "IRIS_path": "/opt/FVP_Corstone_SSE-300_Ethos-U55/Iris/Python/",
         "configs": {
             "MPS2": "MPS2.conf",
-            "NETWORK": "NETWORK.conf"
+            "COVERAGE": "COVERAGE.conf"
         }
     },
     "FVP_CS300_U55": {
@@ -12,7 +12,6 @@
         "configs": {
             "MPS3": "MPS3.conf"
         }
-        
     },
 
     "FVP_MPS2_M0": {
