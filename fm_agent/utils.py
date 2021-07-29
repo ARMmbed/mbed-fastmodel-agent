@@ -16,15 +16,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import io
-import platform
 import os
 import sys
-import time
-import socket
 import logging
 from functools import partial
-from subprocess import Popen, PIPE, STDOUT, TimeoutExpired
+from subprocess import Popen, PIPE, STDOUT
+from threading  import Thread
+from queue import Queue, Empty
+ON_POSIX = 'posix' in sys.builtin_module_names
+
 
 class SimulatorError(Exception):
     """
@@ -128,20 +128,33 @@ def remove_gcda(rootdir="."):
             if file.endswith(".gcda"):
                 os.remove(os.path.join(root, file))
 
-def launch_FVP_IRIS(model_exec, config_file='',  lines_out=6):
+def enqueue_output(out, queue):
+    for line in iter(out.readline, b''):
+        queue.put(line)
+    out.close()
+
+def launch_FVP_IRIS(model_exec, config_file=''):
     """Launch FVP with IRIS Server listening"""
     cmd_line = [model_exec, '-I', '-p']
     if config_file:
         cmd_line.extend(['-f' , config_file])
-    fm_proc = Popen(cmd_line,stdout=PIPE,stderr=STDOUT)
+    fm_proc = Popen(cmd_line,stdout=PIPE,stderr=STDOUT, close_fds=ON_POSIX)
+    out_q = Queue()
+    reader_t = Thread(target=enqueue_output, args=(fm_proc.stdout, out_q))
+    reader_t.daemon = True
+    reader_t.start()
 
     stdout=''
     port = 0
-
-    for num in range(lines_out):
-        line = fm_proc.stdout.readline().decode()
-        if line.startswith("Iris server started listening to port"):
-            port = int(line[-5:])
-        stdout += line
+    end = False
+    
+    while not end:
+        try: line = out_q.get(timeout=1).decode().strip()
+        except Empty:
+            end = True
+        else:
+            if line.startswith("Iris server started listening to port"):
+                port = int(line[-5:])
+            stdout = stdout + line + "\n"
         
     return (fm_proc, port, stdout)

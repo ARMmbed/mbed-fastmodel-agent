@@ -16,13 +16,13 @@
 
     "FVP_MPS2_M0": {
         "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M0",
-        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
+        "terminal_component": "component.FVP_MPS2_Cortex_M0.fvp_mps2.telnetterminal0"
     },
 
     "FVP_MPS2_M0P": {
 
         "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M0plus",
-        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
+        "terminal_component": "component.FVP_MPS2_Cortex_M0plus.fvp_mps2.telnetterminal0"
     },
 
     "FVP_MPS2_M3": {
@@ -32,11 +32,11 @@
 
     "FVP_MPS2_M4": {
         "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M4",
-        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
+        "terminal_component": "component.FVP_MPS2_Cortex_M4.fvp_mps2.telnetterminal0"
     },
 
     "FVP_MPS2_M7": {
         "model_binary": "/opt/FM_FVP/FVP_MPS2_Cortex-M7",
-        "terminal_component": "component.FVP_MPS2_Cortex_M3.fvp_mps2.telnetterminal0"
+        "terminal_component": "component.FVP_MPS2_Cortex_M7.fvp_mps2.telnetterminal0"
     }
 }
