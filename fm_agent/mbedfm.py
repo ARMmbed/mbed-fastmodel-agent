@@ -32,6 +32,7 @@ def get_version():
 
 def print_version():
     print(get_version())
+    return True
 
 def print_models():
     print(list_fastmodels())

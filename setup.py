@@ -5,7 +5,7 @@ PyPI package for the mbed SDK test suite
 
 """
 mbed SDK
-Copyright (c) 2018-2019 ARM Limited
+Copyright (c) 2018-2021 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-Author: Przemyslaw Wirkus <Przemyslaw.Wirkus@arm.com>
+Author: Qinghao Shi <Qinghao.shi@arm.com>
 """
 
 import os
@@ -38,7 +38,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
 
 setup(name='mbed-fastmodel-agent',
-      version='1.0',
+      version='2.0',
       description=DESCRIPTION,
       long_description=read('README.md'),
       entry_points = {'console_scripts': ['mbedfm=fm_agent.mbedfm:main']},
@@ -53,7 +53,7 @@ setup(name='mbed-fastmodel-agent',
       include_package_data=True,
       install_requires=[
           "PrettyTable>=0.7.2",
-          "mbed-host-tests>=1.4.1",
+          "mbed-host-tests>=1.5.0",
           "mbed-greentea>=1.5.0"
       ]
 )
