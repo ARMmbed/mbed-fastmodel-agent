@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 mbed SDK
-Copyright (c) 2011-2018 ARM Limited
+Copyright (c) 2011-2021 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -70,9 +70,11 @@ class FastmodelAgent():
             self.logger.prn_err("NO model_binary available for '%s'"% self.fastmodel_name)
             self.__guide()
             raise SimulatorError("fastmodel '%s' not available" % (self.fastmodel_name))
-            
+
+        self.model_options = self.configuration.get_model_options(self.fastmodel_name)
+
         config_dict = self.configuration.get_configs(self.fastmodel_name)
-        
+
         if config_dict and self.config_name in config_dict:
             config_file = config_dict[self.config_name]
             self.model_config_file = os.path.join( os.path.dirname(__file__) ,"configs" , config_file )
@@ -114,7 +116,7 @@ class FastmodelAgent():
         """ launch given fastmodel with configs """
         if check_import():
             import iris.debug
-            proc, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file)
+            proc, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file, self.model_options)
             print(outs)
             self.model = iris.debug.NetworkModel('localhost',IRIS_port)
             # check which host socket port is used for terminal0
