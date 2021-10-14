@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 mbed SDK
-Copyright (c) 2011-2018 ARM Limited
+Copyright (c) 2011-2021 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -66,6 +66,19 @@ class FastmodelConfig():
             return None
   
         return self.json_configs[model_name]["model_binary"]
+
+    def get_model_options(self,model_name):
+        """ get the model binary options from the config file
+            @return a list of model options
+            @return an empty list if not found
+        """
+        if model_name not in self.json_configs:
+            return []
+
+        if "model_options" not in self.json_configs[model_name]:
+            return []
+
+        return self.json_configs[model_name]["model_options"]
 
     def get_model_terminal_comp(self,model_name):
         """ get the model terminal compoment name from the config file

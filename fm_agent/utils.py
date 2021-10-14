@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 mbed SDK
-Copyright (c) 2011-2018 ARM Limited
+Copyright (c) 2011-2021 ARM Limited
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -133,9 +133,10 @@ def enqueue_output(out, queue):
         queue.put(line)
     out.close()
 
-def launch_FVP_IRIS(model_exec, config_file=''):
+def launch_FVP_IRIS(model_exec, config_file='', model_options=[]):
     """Launch FVP with IRIS Server listening"""
     cmd_line = [model_exec, '-I', '-p']
+    cmd_line.extend(model_options)
     if config_file:
         cmd_line.extend(['-f' , config_file])
     fm_proc = Popen(cmd_line,stdout=PIPE,stderr=STDOUT, close_fds=ON_POSIX)

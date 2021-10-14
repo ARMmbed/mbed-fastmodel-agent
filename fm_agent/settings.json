@@ -8,6 +8,9 @@
     },
     "FVP_CS300_U55": {
         "model_binary": "/opt/FVP_Corstone_SSE-300_Ethos-U55/models/Linux64_GCC-6.4//FVP_Corstone_SSE-300_Ethos-U55",
+        "model_options": [
+            "--quantum=10"
+        ],
         "terminal_component": "component.FVP_MPS3_Corstone_SSE_300.mps3_board.telnetterminal0",
         "configs": {
             "MPS3": "MPS3.conf"
