@@ -139,6 +139,7 @@ def launch_FVP_IRIS(model_exec, config_file='', model_options=[]):
     cmd_line.extend(model_options)
     if config_file:
         cmd_line.extend(['-f' , config_file])
+    logging.info(cmd_line)
     fm_proc = Popen(cmd_line,stdout=PIPE,stderr=STDOUT, close_fds=ON_POSIX)
     out_q = Queue()
     reader_t = Thread(target=enqueue_output, args=(fm_proc.stdout, out_q))
