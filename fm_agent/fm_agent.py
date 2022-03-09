@@ -26,12 +26,12 @@ from .fm_config import FastmodelConfig
 class FastmodelAgent():
     def __init__(self, model_name=None, model_config=None, logger=None):
         """ initialize FastmodelAgent
-            @param all are optional, if none of the argument give, will just query for information 
+            @param all are optional, if none of the argument give, will just query for information
             @param if want to launch and connect to fast model, model_name and model_config are necessary
             @param model_name is the name to the fast model
             @param model_config is the config file to the fast model
         """
-        
+
         self.fastmodel_name = model_name
         self.config_name    = model_config
 
@@ -80,11 +80,11 @@ class FastmodelAgent():
             self.model_config_file = os.path.join( os.path.dirname(__file__) ,"configs" , config_file )
 
         elif os.path.exists(os.path.join( os.getcwd(), self.config_name )):
-            self.model_config_file = os.path.join( os.getcwd() , config_name )
+            self.model_config_file = os.path.join( os.getcwd() , self.config_name )
         else:
             self.__guide()
             raise SimulatorError("No config %s avaliable for fastmodel %s" % (self.config_name,self.fastmodel_name))
-        
+
         self.model_terminal = self.configuration.get_model_terminal_comp(self.fastmodel_name)
 
         if not self.model_terminal:
@@ -107,11 +107,11 @@ class FastmodelAgent():
     def __guide(self):
         """ print out information mebdls, help user to spot where possible went wrong"""
         self.logger.prn_inf("Use 'mbedfm' to list all the available Fast Models")
-    
+
     def is_simulator_alive(self):
         """return if the terminal socket is connected"""
         return bool(self.model)
-        
+
     def start_simulator(self):
         """ launch given fastmodel with configs """
         if check_import():
@@ -186,10 +186,10 @@ class FastmodelAgent():
             return False
 
     def read(self):
-    
+
         if not self.__socketConnected():
             return None
-        
+
         data = bytearray()
         read_stop = False
 
@@ -260,7 +260,7 @@ class FastmodelAgent():
 
     def __CodeCoverage(self):
         """ runs code coverage dump gcda file """
-        
+
         self.model.stop()
         cpu = self.model.get_cpus()[0]
 
@@ -318,14 +318,14 @@ class FastmodelAgent():
             else:
                 stopped_loc = cpu.read_register('Core.R15')
                 break
-            
+
 
         if stopped_loc == bkpt_exit.address:
             self.logger.prn_inf("Coverage dump program run to the end.")
         else:
             self.logger.prn_wrn("Coverage dump ended somewhere else!!")
         lcov_collect(os.path.basename(self.image))
-        
+
     def shutdown_simulator(self):
         """ shutdown fastmodel if any """
         if self.is_simulator_alive():
@@ -338,7 +338,7 @@ class FastmodelAgent():
             time.sleep(1)
         else:
             self.logger.prn_inf("Model already shutdown")
-            
+
     def list_avaliable_models(self):
         """ return a dictionary of models and configs """
         return self.configuration.get_all_configs()
@@ -346,7 +346,7 @@ class FastmodelAgent():
     def list_model_binary(self, model_name):
         """ return model binary full path of give model_name """
         return self.configuration.get_model_binary(model_name)
-        
+
     def check_config_exist(self,filename):
         """ return the presents of give config name
         """
