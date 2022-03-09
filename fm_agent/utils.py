@@ -20,6 +20,7 @@ import os
 import sys
 import logging
 from functools import partial
+import subprocess
 from subprocess import Popen, PIPE, STDOUT
 from threading  import Thread
 from queue import Queue, Empty
@@ -51,18 +52,8 @@ class FMLogger(object):
         self.prn_inf = partial(__prn_log, self, 'INF')
         self.prn_txt = partial(__prn_log, self, 'TXT')
         self.prn_txd = partial(__prn_log, self, 'TXD')
-        self.prn_rxd = partial(__prn_log, self, 'RXD')    
+        self.prn_rxd = partial(__prn_log, self, 'RXD')
 
-def get_IRIS_path(self):
-    """ get the IRIS path from the config file
-        @return IRIS path if setting exist 
-        @return None if not exist
-    """
-    if "IRIS_path" in self.json_configs["COMMON"]:
-        return self.json_configs["COMMON"]["IRIS_path"]
-    else:
-        return None
-        
 def check_import():
     """ try PyIRIS API iris.debug can be imported """
     warning_msgs = []
@@ -116,11 +107,11 @@ def ByteToInt( byteList ):
 
 def HexToInt( hex ):
     return int(hex,16)
-    
+
 def lcov_collect(filename):
     """this function reads images symbol to a global variable"""
     subprocess.call('lcov -c -d . --no-external -o BUILD/{}.info'.format(filename), shell=True)
-        
+
 def remove_gcda(rootdir="."):
     """this function removes gcda files"""
     for root, dirs, files in os.walk(rootdir):
@@ -149,7 +140,7 @@ def launch_FVP_IRIS(model_exec, config_file='', model_options=[]):
     stdout=''
     port = 0
     end = False
-    
+
     while not end:
         try: line = out_q.get(timeout=1).decode().strip()
         except Empty:
@@ -158,5 +149,5 @@ def launch_FVP_IRIS(model_exec, config_file='', model_options=[]):
             if line.startswith("Iris server started listening to port"):
                 port = int(line[-5:])
             stdout = stdout + line + "\n"
-        
+
     return (fm_proc, port, stdout)
