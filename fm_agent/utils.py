@@ -151,3 +151,8 @@ def launch_FVP_IRIS(model_exec, config_file='', model_options=[]):
             stdout = stdout + line + "\n"
 
     return (fm_proc, port, stdout)
+
+def getenv_replace(s):
+    """Replace substrings enclosed by {{ and }} with values from the environment so that e.g. '{{USER}}' becomes 'root'.
+    """
+    return s.replace('{{', '{').replace('}}', '}').format(**os.environ)
