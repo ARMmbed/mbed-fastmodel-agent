@@ -186,10 +186,13 @@ class FastmodelAgent():
         else:
             return False
 
-    def read(self):
+    def read(self, end='\n', bs=-1):
 
         if not self.__socketConnected():
             return None
+
+        if bs is None:
+            bs = -1
 
         data = bytearray()
         read_stop = False
@@ -206,7 +209,7 @@ class FastmodelAgent():
                 self.logger.prn_err(str(e))
             else:
                 data += char
-                if char == "\n":
+                if char == end or (bs >= 0 and len(data) >= bs):
                     read_stop=True
 
         return data
