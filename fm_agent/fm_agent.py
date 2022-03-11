@@ -112,12 +112,13 @@ class FastmodelAgent():
         """return if the terminal socket is connected"""
         return bool(self.model)
 
-    def start_simulator(self):
+    def start_simulator(self, stream=sys.stdout):
         """ launch given fastmodel with configs """
         if check_import():
             import iris.debug
             proc, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file, self.model_options)
-            print(outs)
+            if stream:
+                print(outs, file=stream)
             self.model = iris.debug.NetworkModel('localhost',IRIS_port)
             # check which host socket port is used for terminal0
             terminal = self.model.get_target(self.model_terminal)
