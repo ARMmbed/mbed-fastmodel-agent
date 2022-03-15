@@ -23,8 +23,10 @@ import socket
 from .utils import *
 from .fm_config import FastmodelConfig
 
+_GDB_PORT = 31627
+
 class FastmodelAgent():
-    def __init__(self, model_name=None, model_config=None, logger=None):
+    def __init__(self, model_name=None, model_config=None, logger=None, enable_gdbserver=False):
         """ initialize FastmodelAgent
             @param all are optional, if none of the argument give, will just query for information
             @param if want to launch and connect to fast model, model_name and model_config are necessary
@@ -34,6 +36,7 @@ class FastmodelAgent():
 
         self.fastmodel_name = model_name
         self.config_name    = model_config
+        self.enable_gdbserver = enable_gdbserver
 
         #If logging not provided, use default log
         if logger:
@@ -72,6 +75,19 @@ class FastmodelAgent():
             raise SimulatorError("fastmodel '%s' not available" % (self.fastmodel_name))
 
         self.model_options = self.configuration.get_model_options(self.fastmodel_name)
+        if self.enable_gdbserver:
+            global _GDB_PORT
+            self.gdb_port = _GDB_PORT
+            _GDB_PORT += 1
+
+            self.model_options += [
+                '--allow-debug-plugin',
+                '--plugin',
+                'GDBRemoteConnection.so',
+                '-C',
+                f'REMOTE_CONNECTION.GDBRemoteConnection.port={self.gdb_port}'
+            ]
+
 
         config_dict = self.configuration.get_configs(self.fastmodel_name)
 
