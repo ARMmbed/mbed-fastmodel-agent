@@ -37,6 +37,7 @@ class FastmodelAgent():
         self.fastmodel_name = model_name
         self.config_name    = model_config
         self.enable_gdbserver = enable_gdbserver
+        self.subprocess = None
 
         #If logging not provided, use default log
         if logger:
@@ -132,7 +133,7 @@ class FastmodelAgent():
         """ launch given fastmodel with configs """
         if check_import():
             import iris.debug
-            proc, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file, self.model_options)
+            self.subprocess, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file, self.model_options)
             if stream:
                 print(outs, file=stream)
             self.model = iris.debug.NetworkModel('localhost',IRIS_port)
@@ -183,7 +184,7 @@ class FastmodelAgent():
             time.sleep(1)
             import iris.debug
 
-            proc, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file)
+            self.subprocess, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file)
             if IRIS_port==0:
                 print(outs)
                 return False
