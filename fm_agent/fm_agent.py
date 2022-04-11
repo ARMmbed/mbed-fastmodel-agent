@@ -18,6 +18,7 @@ limitations under the License.
 
 import sys
 import os
+from subprocess import Popen
 import time
 import socket
 from .utils import *
@@ -54,6 +55,10 @@ class FastmodelAgent():
             self.setup_simulator(model_name,model_config)
         else:
             pass
+
+    def __del__(self):
+        if isinstance(self.subprocess, Popen):
+            self.subprocess.kill()
 
     def setup_simulator(self, model_name, model_config):
         """ setup the simulator, this is crucial before you can start a simulator.
