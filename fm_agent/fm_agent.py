@@ -16,6 +16,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import multiprocessing
 import sys
 import os
 from subprocess import Popen
@@ -24,9 +25,59 @@ import socket
 from .utils import *
 from .fm_config import FastmodelConfig
 
-_GDB_PORT = 31627
+class _Port:
+    '''Self-freeing port wrapper class.'''
+    def __init__(self, value, allocator):
+        self.value = value
+        self.allocator = allocator
+        self.freed = False
+
+    def __del__(self):
+        if not self.freed:
+            self.allocator.free(self)
+
+    def __int__(self):
+        return self.value
+
+class _PortAllocator:
+    '''Port allocator. Allocate ports in a range, wrapping around to reuse earlier free ports when the end of the range
+    is reached.'''
+    def __init__(self, range_start, range_end, skip=1):
+        assert range_start + skip <= range_end
+        self.range_start = range_start
+        self.range_end = range_end
+        self.skip = skip
+        self.ports = set()
+        self._last = range_start
+
+    def allocate(self):
+        '''Allocate the next port. Raise OverflowError when all ports are allocated.'''
+        try:
+            return self._allocate(self._last)
+        except OverflowError:
+            return self._allocate(self.range_start)
+
+    def free(self, port):
+        '''Free a port. Raise KeyError if the port was already freed/never allocated.'''
+        if isinstance(port, _Port):
+            port.freed = True
+            port = port.value
+        self.ports.remove(port)
+
+    def _allocate(self, start):
+        for port in range(start, self.range_end, self.skip):
+            if port in self.ports:
+                continue
+            self.ports.add(port)
+            self._last = port
+            return _Port(port, self)
+        raise OverflowError()
 
 class FastmodelAgent():
+    _setup_lock = multiprocessing.Lock()
+    _gdb_port_allocator = _PortAllocator(31627, 65535)
+    _telnet_port_allocator = _PortAllocator(5000, 7000, skip=4)
+
     def __init__(self, model_name=None, model_config=None, logger=None, enable_gdbserver=False):
         """ initialize FastmodelAgent
             @param all are optional, if none of the argument give, will just query for information
@@ -58,7 +109,8 @@ class FastmodelAgent():
 
     def __del__(self):
         if isinstance(self.subprocess, Popen):
-            self.subprocess.kill()
+            self.subprocess.terminate()
+            self.subprocess.wait()
 
     def setup_simulator(self, model_name, model_config):
         """ setup the simulator, this is crucial before you can start a simulator.
@@ -66,6 +118,10 @@ class FastmodelAgent():
             @param model_config is the specific model configure file need to be launched
             This function check if both model_name or model_config are valid
         """
+        with self._setup_lock:
+            self._internal_setup_simulator(model_name, model_config)
+
+    def _internal_setup_simulator(self, model_name, model_config):
         self.fastmodel_name = model_name
         self.config_name    = model_config
 
@@ -81,19 +137,19 @@ class FastmodelAgent():
             raise SimulatorError("fastmodel '%s' not available" % (self.fastmodel_name))
 
         self.model_options = self.configuration.get_model_options(self.fastmodel_name)
-        if self.enable_gdbserver:
-            global _GDB_PORT
-            self.gdb_port = _GDB_PORT
-            _GDB_PORT += 1
 
+        self.telnet_port = self._telnet_port_allocator.allocate()
+        self.model_options += ['-C', f'mps3_board.telnetterminal0.start_port={self.telnet_port.value}']
+
+        if self.enable_gdbserver:
+            self.gdb_port = self._gdb_port_allocator.allocate()
             self.model_options += [
                 '--allow-debug-plugin',
                 '--plugin',
                 'GDBRemoteConnection.so',
                 '-C',
-                f'REMOTE_CONNECTION.GDBRemoteConnection.port={self.gdb_port}'
+                f'REMOTE_CONNECTION.GDBRemoteConnection.port={self.gdb_port.value}'
             ]
-
 
         config_dict = self.configuration.get_configs(self.fastmodel_name)
 
