@@ -102,6 +102,9 @@ class FastmodelAgent():
         self.socket = None # running instant of socket
         self.configuration = FastmodelConfig()
 
+        self.IRIS_port = None
+        self.terminal_ports = [None]*NUM_FVP_UART
+
         if model_config:
             self.setup_simulator(model_name,model_config)
         else:
@@ -190,23 +193,36 @@ class FastmodelAgent():
         """return if the terminal socket is connected"""
         return bool(self.model)
 
-    def start_simulator(self, stream=sys.stdout):
+    def start_simulator(self):
         """ launch given fastmodel with configs """
         if check_import():
-            import iris.debug
-            self.subprocess, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file, self.model_options)
-            if stream:
-                print(outs, file=stream)
-            self.model = iris.debug.NetworkModel('localhost',IRIS_port)
-            # check which host socket port is used for terminal0
-            terminal = self.model.get_target(self.model_terminal)
-            self.port = terminal.read_register('Default.Port')
-            self.host = "localhost"
+            self.__spawn_simulator()
+
             self.image = None
 
             return True
         else:
             raise SimulatorError("fastmodel product was NOT installed correctly")
+
+    def __spawn_simulator(self):
+        import iris.debug
+
+        self.host = "localhost"
+
+        self.subprocess, self.IRIS_port, self.terminal_ports = launch_FVP_IRIS(
+            self.model_binary, self.model_config_file, self.model_options)
+
+        self.model = iris.debug.NetworkModel(self.host,self.IRIS_port)
+
+        terminal = self.model.get_target(self.model_terminal)
+
+        if self.terminal_ports[0] is None:
+            # This can be incorrect when the port is set explicitly as the FVP can choose a different port without
+            # updating Default.Port.
+            self.port = terminal.read_register('Default.Port')
+            self.logger.prn_wrn(f'Could not get port for telnetterminal0 from FVP output, best guess is {self.port}')
+        else:
+            self.port = self.terminal_ports[0]
 
     def load_simulator(self,image):
         """ Load a launched fastmodel with given image(full path)"""
@@ -243,20 +259,14 @@ class FastmodelAgent():
             self.__closeConnection()
             self.model.release(shutdown=True)
             time.sleep(1)
-            import iris.debug
 
-            self.subprocess, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file)
-            if IRIS_port==0:
-                print(outs)
-                return False
-            self.model = iris.debug.NetworkModel('localhost',IRIS_port)
-            # check which host socket port is used for terminal0
-            terminal = self.model.get_target(self.model_terminal)
-            self.port = terminal.read_register('Default.Port')
-            cpu = self.model.get_cpus()[0]
+            self.__spawn_simulator()
+
             if self.image:
+                cpu = self.model.get_cpus()[0]
                 cpu.load_application(self.image)
                 self.logger.prn_wrn("RELOAD new image to FastModel")
+
             self.model.run(blocking=False)
             self.__connect_terminal()
             self.logger.prn_wrn("Reconnect Terminal")
