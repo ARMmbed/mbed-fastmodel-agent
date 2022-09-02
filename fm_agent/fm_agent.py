@@ -16,8 +16,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import atexit
 import multiprocessing
-import sys
 import os
 from subprocess import Popen
 import time
@@ -86,10 +86,12 @@ class FastmodelAgent():
             @param model_config is the config file to the fast model
         """
 
+        atexit.register(self.__del__)
+
         self.fastmodel_name = model_name
         self.config_name    = model_config
         self.enable_gdbserver = enable_gdbserver
-        self.subprocess = None
+        self.subprocess:Popen = None
 
         #If logging not provided, use default log
         if logger:
@@ -102,15 +104,19 @@ class FastmodelAgent():
         self.socket = None # running instant of socket
         self.configuration = FastmodelConfig()
 
+        self.IRIS_port = None
+        self.terminal_ports = [None]*NUM_FVP_UART
+
         if model_config:
             self.setup_simulator(model_name,model_config)
         else:
             pass
 
     def __del__(self):
-        if isinstance(self.subprocess, Popen):
-            self.subprocess.terminate()
-            self.subprocess.wait()
+        self.__closeConnection()
+        self.__releaseModel()
+        self.__terminateSubprocess()
+        atexit.unregister(self.__del__)
 
     def setup_simulator(self, model_name, model_config):
         """ setup the simulator, this is crucial before you can start a simulator.
@@ -190,23 +196,36 @@ class FastmodelAgent():
         """return if the terminal socket is connected"""
         return bool(self.model)
 
-    def start_simulator(self, stream=sys.stdout):
+    def start_simulator(self):
         """ launch given fastmodel with configs """
         if check_import():
-            import iris.debug
-            self.subprocess, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file, self.model_options)
-            if stream:
-                print(outs, file=stream)
-            self.model = iris.debug.NetworkModel('localhost',IRIS_port)
-            # check which host socket port is used for terminal0
-            terminal = self.model.get_target(self.model_terminal)
-            self.port = terminal.read_register('Default.Port')
-            self.host = "localhost"
+            self.__spawn_simulator()
+
             self.image = None
 
             return True
         else:
             raise SimulatorError("fastmodel product was NOT installed correctly")
+
+    def __spawn_simulator(self):
+        import iris.debug
+
+        self.host = "localhost"
+
+        self.subprocess, self.IRIS_port, self.terminal_ports = launch_FVP_IRIS(
+            self.model_binary, self.model_config_file, self.model_options)
+
+        self.model = iris.debug.NetworkModel(self.host,self.IRIS_port)
+
+        terminal = self.model.get_target(self.model_terminal)
+
+        if self.terminal_ports[0] is None:
+            # This can be incorrect when the port is set explicitly as the FVP can choose a different port without
+            # updating Default.Port.
+            self.port = terminal.read_register('Default.Port')
+            self.logger.prn_wrn(f'Could not get port for telnetterminal0 from FVP output, best guess is {self.port}')
+        else:
+            self.port = self.terminal_ports[0]
 
     def load_simulator(self,image):
         """ Load a launched fastmodel with given image(full path)"""
@@ -241,22 +260,16 @@ class FastmodelAgent():
         if self.is_simulator_alive():
             self.logger.prn_wrn("STOP and RESTART FastModel")
             self.__closeConnection()
-            self.model.release(shutdown=True)
-            time.sleep(1)
-            import iris.debug
+            self.__releaseModel()
+            self.__terminateSubprocess()
 
-            self.subprocess, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file)
-            if IRIS_port==0:
-                print(outs)
-                return False
-            self.model = iris.debug.NetworkModel('localhost',IRIS_port)
-            # check which host socket port is used for terminal0
-            terminal = self.model.get_target(self.model_terminal)
-            self.port = terminal.read_register('Default.Port')
-            cpu = self.model.get_cpus()[0]
+            self.__spawn_simulator()
+
             if self.image:
+                cpu = self.model.get_cpus()[0]
                 cpu.load_application(self.image)
                 self.logger.prn_wrn("RELOAD new image to FastModel")
+
             self.model.run(blocking=False)
             self.__connect_terminal()
             self.logger.prn_wrn("Reconnect Terminal")
@@ -326,8 +339,6 @@ class FastmodelAgent():
             self.socket.close()
             self.logger.prn_inf("Closing terminal socket connection")
             self.socket = None
-        else:
-            self.logger.prn_inf("Terminal socket connection already closed")
 
     def __run_to_breakpoint(self):
         try:
@@ -415,11 +426,25 @@ class FastmodelAgent():
                 self.__CodeCoverage()
             self.logger.prn_inf("Fast-Model agent shutting down model")
             self.__closeConnection()
-            self.model.release(shutdown=True)
-            self.model=None
-            time.sleep(1)
+            self.__releaseModel()
+            self.__terminateSubprocess()
         else:
             self.logger.prn_inf("Model already shutdown")
+
+    def __releaseModel(self):
+        if self.model:
+            self.model.release(shutdown=True)
+            del self.model
+            self.model = None
+
+    def __terminateSubprocess(self):
+        if self.subprocess:
+            self.subprocess.terminate()
+            if self.subprocess.wait(3) is None:
+                self.subprocess.kill()
+                self.subprocess.wait()
+                del self.subprocess
+                self.subprocess = None
 
     def list_avaliable_models(self):
         """ return a dictionary of models and configs """

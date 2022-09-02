@@ -22,10 +22,10 @@ import logging
 from functools import partial
 import subprocess
 from subprocess import Popen, PIPE, STDOUT
-from threading  import Thread
-from queue import Queue, Empty
+
 ON_POSIX = 'posix' in sys.builtin_module_names
 
+NUM_FVP_UART = 5
 
 class SimulatorError(Exception):
     """
@@ -119,11 +119,6 @@ def remove_gcda(rootdir="."):
             if file.endswith(".gcda"):
                 os.remove(os.path.join(root, file))
 
-def enqueue_output(out, queue):
-    for line in iter(out.readline, b''):
-        queue.put(line)
-    out.close()
-
 def launch_FVP_IRIS(model_exec, config_file='', model_options=[]):
     """Launch FVP with IRIS Server listening"""
     cmd_line = [model_exec, '-I', '-p']
@@ -131,26 +126,25 @@ def launch_FVP_IRIS(model_exec, config_file='', model_options=[]):
     if config_file:
         cmd_line.extend(['-f' , config_file])
     logging.info(cmd_line)
-    fm_proc = Popen(cmd_line,stdout=PIPE,stderr=STDOUT, close_fds=ON_POSIX)
-    out_q = Queue()
-    reader_t = Thread(target=enqueue_output, args=(fm_proc.stdout, out_q))
-    reader_t.daemon = True
-    reader_t.start()
 
-    stdout=''
-    port = 0
-    end = False
+    fm_proc = Popen(cmd_line, stdout=PIPE, stderr=STDOUT, close_fds=ON_POSIX)
 
-    while not end:
-        try: line = out_q.get(timeout=1).decode().strip()
-        except Empty:
-            end = True
-        else:
-            if line.startswith("Iris server started listening to port"):
-                port = int(line[-5:])
-            stdout = stdout + line + "\n"
+    # Read Iris and telnet terminal ports from stdin. Stop on the first blank line.
+    iris_port = None
+    terminal_ports = [None]*NUM_FVP_UART
+    for line in fm_proc.stdout:
+        line = line.strip().decode('utf-8')
+        if line == '':
+            break
 
-    return (fm_proc, port, stdout)
+        words = line.split()
+        if words[0].startswith('telnetterminal'):
+            which = int(words[0][-2])
+            terminal_ports[which] = int(words[-1])
+        elif words[0].startswith('Iris'):
+            iris_port = int(words[-1])
+
+    return (fm_proc, iris_port, terminal_ports)
 
 def getenv_replace(s):
     """Replace substrings enclosed by {{ and }} with values from the environment so that e.g. '{{USER}}' becomes 'root'.
