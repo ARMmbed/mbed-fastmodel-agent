@@ -54,13 +54,13 @@ class FMLogger(object):
         self.prn_txd = partial(__prn_log, self, 'TXD')
         self.prn_rxd = partial(__prn_log, self, 'RXD')
 
-def check_import():
+def check_import(model_name=""):
     """ try PyIRIS API iris.debug can be imported """
     warning_msgs = []
     from .fm_config import FastmodelConfig
     config = FastmodelConfig()
 
-    fm_IRIS_path = config.get_IRIS_path()
+    fm_IRIS_path = config.get_IRIS_path(model_name)
     if fm_IRIS_path:
         if os.path.exists(fm_IRIS_path):
             sys.path.append(fm_IRIS_path)

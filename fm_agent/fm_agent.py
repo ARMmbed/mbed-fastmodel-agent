@@ -192,7 +192,7 @@ class FastmodelAgent():
 
     def start_simulator(self, stream=sys.stdout):
         """ launch given fastmodel with configs """
-        if check_import():
+        if check_import(self.fastmodel_name):
             import iris.debug
             self.subprocess, IRIS_port, outs = launch_FVP_IRIS(self.model_binary, self.model_config_file, self.model_options)
             if stream:
