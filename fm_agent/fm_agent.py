@@ -139,7 +139,11 @@ class FastmodelAgent():
         self.model_options = self.configuration.get_model_options(self.fastmodel_name)
 
         self.telnet_port = self._telnet_port_allocator.allocate()
-        self.model_options += ['-C', f'mps3_board.telnetterminal0.start_port={self.telnet_port.value}']
+
+        if self.config_name == "MPS2":
+            self.model_options += ['-C', f'fvp_mps2.telnetterminal0.start_port={self.telnet_port.value}']
+        elif self.config_name == "MPS3":
+            self.model_options += ['-C', f'mps3_board.telnetterminal0.start_port={self.telnet_port.value}']
 
         if self.enable_gdbserver:
             self.gdb_port = self._gdb_port_allocator.allocate()
