@@ -45,15 +45,19 @@ class FastmodelConfig():
 
         return all_config_dict
 
-    def get_IRIS_path(self):
+    def get_IRIS_path(self, model_name):
         """ get the IRIS path from the config file
             @return IRIS path if setting exist
             @return None if not exist
         """
+        if model_name != "":
+            return getenv_replace(self.json_configs[model_name]["IRIS_path"])
+
         if "IRIS_path" in self.json_configs["COMMON"]:
             return getenv_replace(self.json_configs["COMMON"]["IRIS_path"])
         else:
             return None
+
 
     def get_model_binary(self,model_name):
         """ get the model binary path and name from the config file
